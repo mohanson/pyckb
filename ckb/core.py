@@ -1,5 +1,7 @@
-import hashlib
+import ckb.bech32
+import ckb.config
 import ckb.secp256k1
+import hashlib
 
 
 def hash(data: bytearray):
@@ -69,3 +71,32 @@ class Script:
 
     def __repr__(self):
         return f'Script(code_hash={self.code_hash.hex()}, hash_type={self.hash_type}, args={self.args.hex()})'
+
+
+def address_encode(script: Script):
+    # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
+    # See: https://github.com/rev-chaos/ckb-address-demo/blob/master/ckb_addr_test.py
+    payload = bytearray()
+    payload.append(0x00)
+    # Append secp256k1 code hash
+    payload.extend(script.code_hash)
+    payload.append(script.hash_type)
+    payload.extend(script.args)
+    return ckb.bech32.bech32_encode(
+        ckb.config.current.hrp,
+        ckb.bech32.convertbits(payload, 8, 5),
+        ckb.bech32.Encoding.BECH32M
+    )
+
+
+if __name__ == '__main__':
+    prikey = PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+    pubkey = prikey.pubkey()
+    args = hash(pubkey.pack())[:20].hex()
+    script = Script(
+        ckb.config.current.scripts.secp256k1_blake160.code_hash,
+        ckb.config.current.scripts.secp256k1_blake160.hash_type,
+        bytearray.fromhex(args)
+    )
+    addr = address_encode(script)
+    assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsq09zfkemzt7t4fyjcrhvrua5qjpr8u799s6se0vv'
