@@ -13,4 +13,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Test
-        run: python ckb/core.py
+        run: |
+          python setup.py develop
+          python ckb/core.py
