@@ -28,6 +28,11 @@ class PubKey:
     def __repr__(self):
         return f'PubKey({self.x:064x}, {self.y:064x})'
 
+    def __eq__(self, other):
+        a = self.x == other.x
+        b = self.y == other.y
+        return a and b
+
     @staticmethod
     def read(data: bytearray):
         o = data[0]
@@ -56,8 +61,7 @@ if __name__ == '__main__':
     assert pubkey.x == 0x97202631ccab00b8669e0b1fcc376f082513f22593c5e99fbf76ab02e8911d2e
     assert pubkey.y == 0xeae37bf649d45e0cf83c5c057de60d685ece29e9b7e58959a638845d3d0659c6
     assert pubkey.pack().hex() == '0297202631ccab00b8669e0b1fcc376f082513f22593c5e99fbf76ab02e8911d2e'
-    pubkey = PubKey.read(pubkey.pack())
-    assert pubkey.pack().hex() == '0297202631ccab00b8669e0b1fcc376f082513f22593c5e99fbf76ab02e8911d2e'
+    assert PubKey.read(pubkey.pack()) == pubkey
     assert hash(pubkey.pack())[:20].hex() == 'e5126d9d897e5d5249607760f9da024119f9e296'
 
 
@@ -71,6 +75,12 @@ class Script:
 
     def __repr__(self):
         return f'Script(code_hash={self.code_hash.hex()}, hash_type={self.hash_type}, args={self.args.hex()})'
+
+    def __eq__(self, other):
+        a = self.code_hash == other.code_hash
+        b = self.hash_type == other.hash_type
+        c = self.args == other.args
+        return a and b and c
 
 
 def address_encode(script: Script):
@@ -89,6 +99,15 @@ def address_encode(script: Script):
     )
 
 
+def address_decode(address: str):
+    _, data, _ = ckb.bech32.bech32_decode(address)
+    data = bytearray(ckb.bech32.convertbits(data, 5, 8, False))
+    code_hash = data[1:33]
+    hash_type = data[33]
+    args = data[34:]
+    return Script(code_hash, hash_type, args)
+
+
 if __name__ == '__main__':
     prikey = PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
     pubkey = prikey.pubkey()
@@ -100,3 +119,4 @@ if __name__ == '__main__':
     )
     addr = address_encode(script)
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsq09zfkemzt7t4fyjcrhvrua5qjpr8u799s6se0vv'
+    assert address_decode(addr) == script
