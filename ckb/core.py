@@ -2,6 +2,7 @@ import ckb.bech32
 import ckb.config
 import ckb.secp256k1
 import hashlib
+import struct
 
 
 def hash(data: bytearray):
@@ -85,6 +86,35 @@ class Script:
         c = self.args == other.args
         return a and b and c
 
+    @staticmethod
+    def read(data: bytearray):
+        assert len(data) >= 4
+        assert len(data) >= struct.unpack('<I', data[0:4])[0]
+        code_hash = data[16:48]
+        hash_type = data[48]
+        args_size = struct.unpack('<I', data[49:53])[0]
+        args = data[53:53+args_size]
+        return Script(code_hash, hash_type, args)
+
+    def pack(self):
+        head = bytearray()
+        body = bytearray()
+        head_size = 4 + 3 * 4
+        n = head_size + len(self.code_hash) + 1 + 4 + len(self.args)
+        head.extend(struct.pack('<I', n))
+        n = head_size
+        head.extend(struct.pack('<I', n))
+        body.extend(self.code_hash)
+        n = n + len(self.code_hash)
+        head.extend(struct.pack('<I', n))
+        body.append(self.hash_type)
+        n = n + 1
+        head.extend(struct.pack('<I', n))
+        body.extend(struct.pack('<I', len(self.args)))
+        body.extend(self.args)
+        r = head + body
+        return head + body
+
 
 def address_encode(script: Script):
     # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
@@ -123,3 +153,5 @@ if __name__ == '__main__':
     addr = address_encode(script)
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsq09zfkemzt7t4fyjcrhvrua5qjpr8u799s6se0vv'
     assert address_decode(addr) == script
+    assert hash(script.pack()).hex() == '353461b48830c0535ef731aaeccfd714094d5626ccd5bfc8c03e051d13a71068'
+    assert Script.read(script.pack()) == script
