@@ -16,3 +16,4 @@ jobs:
         run: |
           python setup.py develop
           python ckb/core.py
+          python example/generate_account.py
