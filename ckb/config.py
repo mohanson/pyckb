@@ -15,6 +15,8 @@ class ObjectDict(dict):
 
 mainnet = ObjectDict({
     'hrp': 'ckb',
+    # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
+    'url': 'https://mainnet.ckb.dev',
     'scripts': {
         'secp256k1_blake160': {
             'code_hash': bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'),
@@ -25,6 +27,8 @@ mainnet = ObjectDict({
 
 testnet = ObjectDict({
     'hrp': 'ckt',
+    # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
+    'url': 'https://testnet.ckb.dev',
     'scripts': {
         'secp256k1_blake160': {
             'code_hash': bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'),
