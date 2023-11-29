@@ -120,7 +120,6 @@ class Script:
         head.extend(struct.pack('<I', n))
         body.extend(struct.pack('<I', len(self.args)))
         body.extend(self.args)
-        r = head + body
         return head + body
 
 
