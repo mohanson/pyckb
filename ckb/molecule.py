@@ -1,5 +1,5 @@
 
-# byte	array	struct	vector	table	option	union
+# byte array struct vector table option union
 
 class Byte:
     def __init__(self, b: int):
@@ -8,3 +8,10 @@ class Byte:
 
     def pack(self):
         return bytearray([self.b])
+
+class Array:
+    def __init__(self, data):
+        pass
+
+import json
+json.loads

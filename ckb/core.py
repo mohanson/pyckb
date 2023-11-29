@@ -16,12 +16,20 @@ class PriKey:
     def __repr__(self):
         return f'PriKey({self.n:064x})'
 
-    def pubkey(self):
-        pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
-        return PubKey(pubkey.x.x, pubkey.y.x)
+    def __eq__(self, other):
+        a = self.n == other.n
+        return a
+
+    @staticmethod
+    def read(data: bytearray):
+        return Prikey(int.from_bytes(data, byteorder='big'))
 
     def pack(self):
         return bytearray(self.n.to_bytes(32, byteorder='big'))
+
+    def pubkey(self):
+        pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
+        return PubKey(pubkey.x.x, pubkey.y.x)
 
 
 class PubKey:
