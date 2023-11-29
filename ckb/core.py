@@ -19,6 +19,9 @@ class PriKey:
         pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
 
+    def pack(self):
+        return bytearray(self.n.to_bytes(32, byteorder='big'))
+
 
 class PubKey:
     def __init__(self, x: int, y: int):
