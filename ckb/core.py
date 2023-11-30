@@ -14,7 +14,7 @@ class PriKey:
         self.n = n
 
     def __repr__(self):
-        return f'PriKey({self.n:064x})'
+        return f'PriKey(n={self.n:064x})'
 
     def __eq__(self, other):
         a = self.n == other.n
@@ -39,7 +39,7 @@ class PubKey:
         self.y = y
 
     def __repr__(self):
-        return f'PubKey({self.x:064x}, {self.y:064x})'
+        return f'PubKey(x={self.x:064x}, y={self.y:064x})'
 
     def __eq__(self, other):
         a = self.x == other.x
@@ -175,3 +175,160 @@ if __name__ == '__main__':
     assert address_decode(addr) == script
     assert hash(script.pack()).hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert Script.read(script.pack()) == script
+
+
+class OutPoint:
+    def __init__(self, tx_hash: bytearray, index: int):
+        assert len(tx_hash) == 32
+        self.tx_hash = tx_hash
+        self.index = index
+
+    def __repr__(self):
+        return f'OutPoint(tx_hash={self.tx_hash.hex()}, index={self.index})'
+
+    def __eq__(self, other):
+        a = self.tx_hash == other.tx_hash
+        b = self.index == other.index
+        return a and b
+
+    @staticmethod
+    def read(data: bytearray):
+        assert len(data) == 36
+        return OutPoint(data[0x00:0x20], struct.unpack('<I', data[0x20:0x24])[0])
+
+    def pack(self):
+        r = bytearray()
+        r.extend(self.tx_hash)
+        r.extend(struct.pack('<I', self.index))
+        return r
+
+    def json(self):
+        return {
+            'tx_hash': '0x' + self.tx_hash.hex(),
+            'index': hex(self.index),
+        }
+
+
+if __name__ == '__main__':
+    out_point = OutPoint(
+        ckb.config.current.scripts.secp256k1_blake160.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.out_point.index,
+    )
+    assert OutPoint.read(out_point.pack()) == out_point
+
+
+class CellInput:
+    def __init__(self, since: int, previous_output: OutPoint):
+        self.since = since
+        self.previous_output = previous_output
+
+    def __repr__(self):
+        return f'CellInput(since={self.since}, previous_output={self.previous_output})'
+
+    def __eq__(self, other):
+        a = self.since == other.since
+        b = self.previous_output == other.previous_output
+        return a and b
+
+    @staticmethod
+    def read(data: bytearray):
+        assert len(data) == 44
+        return CellInput(
+            struct.unpack('<Q', data[:8])[0],
+            OutPoint.read(data[8:44])
+        )
+
+    def pack(self):
+        r = bytearray()
+        r.extend(struct.pack('<Q', self.since))
+        r.extend(self.previous_output.pack())
+        return r
+
+    def json(self):
+        return {
+            'since': hex(self.since),
+            'previous_output': self.previous_output.json()
+        }
+
+
+if __name__ == '__main__':
+    out_point = OutPoint(
+        ckb.config.current.scripts.secp256k1_blake160.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.out_point.index,
+    )
+    cell_input = CellInput(42, out_point)
+    assert CellInput.read(cell_input.pack()) == cell_input
+
+# table CellOutput {
+#     capacity:       Uint64,
+#     lock:           Script,
+#     type_:          ScriptOpt,
+# }
+
+# struct CellDep {
+#     out_point:      OutPoint,
+#     dep_type:       byte,
+# }
+
+# table RawTransaction {
+#     version:        Uint32,
+#     cell_deps:      CellDepVec,
+#     header_deps:    Byte32Vec,
+#     inputs:         CellInputVec,
+#     outputs:        CellOutputVec,
+#     outputs_data:   BytesVec,
+# }
+
+# table Transaction {
+#     raw:            RawTransaction,
+#     witnesses:      BytesVec,
+# }
+
+# struct RawHeader {
+#     version:                Uint32,
+#     compact_target:         Uint32,
+#     timestamp:              Uint64,
+#     number:                 Uint64,
+#     epoch:                  Uint64,
+#     parent_hash:            Byte32,
+#     transactions_root:      Byte32,
+#     proposals_hash:         Byte32,
+#     extra_hash:             Byte32,
+#     dao:                    Byte32,
+# }
+
+# struct Header {
+#     raw:                    RawHeader,
+#     nonce:                  Uint128,
+# }
+
+# table UncleBlock {
+#     header:                 Header,
+#     proposals:              ProposalShortIdVec,
+# }
+
+# table Block {
+#     header:                 Header,
+#     uncles:                 UncleBlockVec,
+#     transactions:           TransactionVec,
+#     proposals:              ProposalShortIdVec,
+# }
+
+# table BlockV1 {
+#     header:                 Header,
+#     uncles:                 UncleBlockVec,
+#     transactions:           TransactionVec,
+#     proposals:              ProposalShortIdVec,
+#     extension:              Bytes,
+# }
+
+# table CellbaseWitness {
+#     lock:    Script,
+#     message: Bytes,
+# }
+
+# table WitnessArgs {
+#     lock:                   BytesOpt,          // Lock args
+#     input_type:             BytesOpt,          // Type args for input
+#     output_type:            BytesOpt,          // Type args for output
+# }
