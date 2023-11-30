@@ -210,8 +210,8 @@ class OutPoint:
 
 if __name__ == '__main__':
     out_point = OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.out_point.index,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
     )
     assert OutPoint.read(out_point.pack()) == out_point
 
@@ -252,8 +252,8 @@ class CellInput:
 
 if __name__ == '__main__':
     out_point = OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.out_point.index,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
     )
     cell_input = CellInput(42, out_point)
     assert CellInput.read(cell_input.pack()) == cell_input
