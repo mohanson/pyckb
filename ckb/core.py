@@ -2,7 +2,8 @@ import ckb.bech32
 import ckb.config
 import ckb.secp256k1
 import hashlib
-import struct
+import io
+import typing
 
 
 def hash(data: bytearray):
@@ -99,30 +100,28 @@ class Script:
     @staticmethod
     def read(data: bytearray):
         assert len(data) >= 4
-        assert len(data) == struct.unpack('<I', data[0:4])[0]
-        code_hash = data[16:48]
-        hash_type = data[48]
-        args_size = struct.unpack('<I', data[49:53])[0]
-        args = data[53:53+args_size]
+        assert len(data) == int.from_bytes(data[0:4], 'little')
+        reader = io.BytesIO(data[4 + 3 * 4:])
+        code_hash = bytearray(reader.read(32))
+        hash_type = int(reader.read(1)[0])
+        args_size = int.from_bytes(reader.read(4), 'little')
+        args = bytearray(reader.read(args_size))
         return Script(code_hash, hash_type, args)
 
     def pack(self):
+        line = []
+        line.append(self.code_hash)
+        line.append(bytearray([self.hash_type]))
+        line.append(bytearray(len(self.args).to_bytes(4, 'little')) + self.args)
         head = bytearray()
         body = bytearray()
-        head_size = 4 + 3 * 4
-        n = head_size + len(self.code_hash) + 1 + 4 + len(self.args)
-        head.extend(struct.pack('<I', n))
-        n = head_size
-        head.extend(struct.pack('<I', n))
-        body.extend(self.code_hash)
-        n = n + len(self.code_hash)
-        head.extend(struct.pack('<I', n))
-        body.append(self.hash_type)
-        n = n + 1
-        head.extend(struct.pack('<I', n))
-        body.extend(struct.pack('<I', len(self.args)))
-        body.extend(self.args)
-        return head + body
+        head_size = 4 + 4 * len(line)
+        body_size = 0
+        for data in line:
+            head.extend((head_size + body_size).to_bytes(4, 'little'))
+            body.extend(data)
+            body_size += len(data)
+        return (head_size + body_size).to_bytes(4, 'little') + head + body
 
     def json(self):
         return {
@@ -194,12 +193,12 @@ class OutPoint:
     @staticmethod
     def read(data: bytearray):
         assert len(data) == 36
-        return OutPoint(data[0x00:0x20], struct.unpack('<I', data[0x20:0x24])[0])
+        return OutPoint(data[0x00:0x20], int.from_bytes(data[0x20:0x24], 'little'))
 
     def pack(self):
         r = bytearray()
         r.extend(self.tx_hash)
-        r.extend(struct.pack('<I', self.index))
+        r.extend(self.index.to_bytes(4, 'little'))
         return r
 
     def json(self):
@@ -234,13 +233,13 @@ class CellInput:
     def read(data: bytearray):
         assert len(data) == 44
         return CellInput(
-            struct.unpack('<Q', data[:8])[0],
+            int.from_bytes(data[:8], 'little'),
             OutPoint.read(data[8:44])
         )
 
     def pack(self):
         r = bytearray()
-        r.extend(struct.pack('<Q', self.since))
+        r.extend(self.since.to_bytes(8, 'little'))
         r.extend(self.previous_output.pack())
         return r
 
@@ -259,11 +258,75 @@ if __name__ == '__main__':
     cell_input = CellInput(42, out_point)
     assert CellInput.read(cell_input.pack()) == cell_input
 
-# table CellOutput {
-#     capacity:       Uint64,
-#     lock:           Script,
-#     type_:          ScriptOpt,
-# }
+
+class CellOutput:
+    def __init__(self, capacity: int, lock: Script, type: typing.Optional[Script]):
+        self.capacity = capacity
+        self.lock = lock
+        self.type = type
+
+    def __repr__(self):
+        return f'CellOutput(capacity={self.capacity}, lock={self.lock}, type={self.type})'
+
+    def __eq__(self, other):
+        a = self.capacity == other.capacity
+        b = self.lock == other.lock
+        c = self.type == other.type
+        return a and b and c
+
+    @staticmethod
+    def read(data: bytearray):
+        assert len(data) >= 4
+        assert len(data) == int.from_bytes(data[0:4], 'little')
+        reader = io.BufferedReader(io.BytesIO(data[4 + 4 * 3:]))
+        capacity = int.from_bytes(reader.read(8), 'little')
+        size = int.from_bytes(reader.peek(4)[:4], 'little')
+        lock = Script.read(reader.read(size))
+        if reader.peek(1)[0]:
+            size = int.from_bytes(reader.peek(4)[:4], 'little')
+            type = Script.read(reader.read(size))
+        else:
+            type = None
+        return CellOutput(capacity, lock, type)
+
+    def pack(self):
+        line = []
+        line.append(self.capacity.to_bytes(8, 'little'))
+        line.append(self.lock.pack())
+        line.append(self.type.pack() if self.type else bytearray([0]))
+        head = bytearray()
+        body = bytearray()
+        head_size = 4 + 4 * len(line)
+        body_size = 0
+        for data in line:
+            head.extend((head_size + body_size).to_bytes(4, 'little'))
+            body.extend(data)
+            body_size += len(data)
+        return (head_size + body_size).to_bytes(4, 'little') + head + body
+
+    def json(self):
+        return {
+            'capacity': hex(self.capacity),
+            'lock': self.lock.json(),
+            'type': self.type.json() if self.type else None
+        }
+
+
+if __name__ == '__main__':
+    lock = Script(
+        ckb.config.current.scripts.secp256k1_blake160.code_hash,
+        ckb.config.current.scripts.secp256k1_blake160.hash_type,
+        bytearray([0x00]) * 20,
+    )
+    type = Script(
+        ckb.config.current.scripts.dao.code_hash,
+        ckb.config.current.scripts.dao.hash_type,
+        bytearray([0x00]) * 10,
+    )
+    cell_output = CellOutput(0xffff, lock, type)
+    assert CellOutput.read(cell_output.pack()) == cell_output
+    cell_output = CellOutput(0xffff, lock, None)
+    assert CellOutput.read(cell_output.pack()) == cell_output
 
 # struct CellDep {
 #     out_point:      OutPoint,
