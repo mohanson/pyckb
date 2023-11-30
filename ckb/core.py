@@ -22,6 +22,7 @@ class PriKey:
 
     @staticmethod
     def read(data: bytearray):
+        assert len(data) == 32
         return Prikey(int.from_bytes(data, byteorder='big'))
 
     def pack(self):
@@ -47,6 +48,7 @@ class PubKey:
 
     @staticmethod
     def read(data: bytearray):
+        assert len(data) == 33
         o = data[0]
         x = int.from_bytes(data[1:33], byteorder='big')
         y_x_y = x * x * x + ckb.secp256k1.A.x * x + ckb.secp256k1.B.x
@@ -97,7 +99,7 @@ class Script:
     @staticmethod
     def read(data: bytearray):
         assert len(data) >= 4
-        assert len(data) >= struct.unpack('<I', data[0:4])[0]
+        assert len(data) == struct.unpack('<I', data[0:4])[0]
         code_hash = data[16:48]
         hash_type = data[48]
         args_size = struct.unpack('<I', data[49:53])[0]
