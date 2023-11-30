@@ -122,6 +122,17 @@ class Script:
         body.extend(self.args)
         return head + body
 
+    def json(self):
+        return {
+            'code_hash': '0x' + self.code_hash.hex(),
+            'hash_type': {
+                0: 'data',
+                1: 'type',
+                2: 'data1'
+            }[self.hash_type],
+            'args': '0x' + self.args.hex(),
+        }
+
 
 def address_encode(script: Script):
     # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
