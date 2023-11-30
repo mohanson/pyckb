@@ -9,5 +9,7 @@ setuptools.setup(
     author_email='mohanson@outlook.com',
     description='Python SDK for CKB',
     packages=['ckb'],
-    install_requires=[],
+    install_requires=[
+        'requests'
+    ],
 )
