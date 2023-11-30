@@ -16,7 +16,7 @@ def get_cells(search_key):
             break
 
 
-prikey = ckb.core.PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
 pubkey = prikey.pubkey()
 args = ckb.core.hash(pubkey.pack())[:20].hex()
 script = ckb.core.Script(
@@ -26,5 +26,14 @@ script = ckb.core.Script(
 )
 search = {'script': script.json(), 'script_type': 'lock'}
 
+capacity_all = 0
+capacity_dao = 0
 for e in get_cells(search):
-    print(e['out_point'])
+    capacity_all += int(e['output']['capacity'], 16)
+    if e['output']['type']:
+        if bytearray.fromhex(e['output']['type']['code_hash'][2:]) == ckb.config.current.scripts.dao.code_hash:
+            capacity_dao += int(e['output']['capacity'], 16)
+
+assert capacity_all == int(ckb.rpc.get_cells_capacity(search)['capacity'], 16)
+print(f'all: {capacity_all / 100000000}')
+print(f'dao: {capacity_dao / 100000000}')

@@ -17,7 +17,7 @@ def get_cells(search_key, order, limit, after):
 
 
 if __name__ == '__main__':
-    prikey = ckb.core.PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+    prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.pack())[:20].hex()
     script = ckb.core.Script(
@@ -40,7 +40,7 @@ def get_cells_capacity(search_key):
 
 
 if __name__ == '__main__':
-    prikey = ckb.core.PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+    prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.pack())[:20].hex()
     script = ckb.core.Script(

@@ -68,13 +68,13 @@ class PubKey:
 
 if __name__ == '__main__':
     # Double checked by https://ckb.tools/generator
-    prikey = PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
     pubkey = prikey.pubkey()
-    assert pubkey.x == 0x97202631ccab00b8669e0b1fcc376f082513f22593c5e99fbf76ab02e8911d2e
-    assert pubkey.y == 0xeae37bf649d45e0cf83c5c057de60d685ece29e9b7e58959a638845d3d0659c6
-    assert pubkey.pack().hex() == '0297202631ccab00b8669e0b1fcc376f082513f22593c5e99fbf76ab02e8911d2e'
+    assert pubkey.x == 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+    assert pubkey.y == 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
+    assert pubkey.pack().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
     assert PubKey.read(pubkey.pack()) == pubkey
-    assert hash(pubkey.pack())[:20].hex() == 'e5126d9d897e5d5249607760f9da024119f9e296'
+    assert hash(pubkey.pack())[:20].hex() == '75178f34549c5fe9cd1a0c57aebd01e7ddf9249e'
 
 
 class Script:
@@ -160,7 +160,7 @@ def address_decode(address: str):
 
 
 if __name__ == '__main__':
-    prikey = PriKey(0xd5d8fe30c6ab6bfd2c6e0a940299a1e01a9ab6b8a8ed407a00b130e6a51435fc)
+    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
     pubkey = prikey.pubkey()
     args = hash(pubkey.pack())[:20].hex()
     script = Script(
@@ -169,7 +169,7 @@ if __name__ == '__main__':
         bytearray.fromhex(args)
     )
     addr = address_encode(script)
-    assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsq09zfkemzt7t4fyjcrhvrua5qjpr8u799s6se0vv'
+    assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
     assert address_decode(addr) == script
-    assert hash(script.pack()).hex() == '353461b48830c0535ef731aaeccfd714094d5626ccd5bfc8c03e051d13a71068'
+    assert hash(script.pack()).hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert Script.read(script.pack()) == script
