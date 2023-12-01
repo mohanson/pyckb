@@ -1,8 +1,10 @@
 import ckb.bech32
 import ckb.config
+import ckb.molecule
 import ckb.secp256k1
 import hashlib
 import io
+import json
 import typing
 
 
@@ -15,7 +17,7 @@ class PriKey:
         self.n = n
 
     def __repr__(self):
-        return f'PriKey(n={self.n:064x})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.n == other.n
@@ -29,6 +31,11 @@ class PriKey:
     def pack(self):
         return bytearray(self.n.to_bytes(32, byteorder='big'))
 
+    def json(self):
+        return {
+            'n': f'0x{self.n:064x}'
+        }
+
     def pubkey(self):
         pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
@@ -40,7 +47,7 @@ class PubKey:
         self.y = y
 
     def __repr__(self):
-        return f'PubKey(x={self.x:064x}, y={self.y:064x})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.x == other.x
@@ -68,6 +75,12 @@ class PubKey:
         r.extend(self.x.to_bytes(32, byteorder='big'))
         return r
 
+    def json(self):
+        return {
+            'x': f'0x{self.x:064x}',
+            'y': f'0x{self.y:064x}'
+        }
+
 
 if __name__ == '__main__':
     # Double checked by https://ckb.tools/generator
@@ -89,7 +102,7 @@ class Script:
         self.args = args
 
     def __repr__(self):
-        return f'Script(code_hash={self.code_hash.hex()}, hash_type={self.hash_type}, args={self.args.hex()})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.code_hash == other.code_hash
@@ -99,39 +112,28 @@ class Script:
 
     @staticmethod
     def read(data: bytearray):
-        assert len(data) >= 4
-        assert len(data) == int.from_bytes(data[0:4], 'little')
-        reader = io.BytesIO(data[4 + 3 * 4:])
-        code_hash = bytearray(reader.read(32))
-        hash_type = int(reader.read(1)[0])
-        args_size = int.from_bytes(reader.read(4), 'little')
-        args = bytearray(reader.read(args_size))
+        result = ckb.molecule.Dynvec.read(data)
+        code_hash = result[0]
+        hash_type = int(result[1][0])
+        args = ckb.molecule.Bytenn.read(result[2])
         return Script(code_hash, hash_type, args)
 
     def pack(self):
-        line = []
-        line.append(self.code_hash)
-        line.append(bytearray([self.hash_type]))
-        line.append(bytearray(len(self.args).to_bytes(4, 'little')) + self.args)
-        head = bytearray()
-        body = bytearray()
-        head_size = 4 + 4 * len(line)
-        body_size = 0
-        for data in line:
-            head.extend((head_size + body_size).to_bytes(4, 'little'))
-            body.extend(data)
-            body_size += len(data)
-        return (head_size + body_size).to_bytes(4, 'little') + head + body
+        return ckb.molecule.Dynvec([
+            ckb.molecule.Byte32(self.code_hash),
+            ckb.molecule.Byte(self.hash_type),
+            ckb.molecule.Bytenn(self.args)
+        ]).pack()
 
     def json(self):
         return {
-            'code_hash': '0x' + self.code_hash.hex(),
+            'code_hash': f'0x{self.code_hash.hex()}',
             'hash_type': {
                 0: 'data',
                 1: 'type',
                 2: 'data1'
             }[self.hash_type],
-            'args': '0x' + self.args.hex(),
+            'args': f'0x{self.args.hex()}',
         }
 
 
@@ -183,7 +185,7 @@ class OutPoint:
         self.index = index
 
     def __repr__(self):
-        return f'OutPoint(tx_hash={self.tx_hash.hex()}, index={self.index})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.tx_hash == other.tx_hash
@@ -193,13 +195,16 @@ class OutPoint:
     @staticmethod
     def read(data: bytearray):
         assert len(data) == 36
-        return OutPoint(data[0x00:0x20], int.from_bytes(data[0x20:0x24], 'little'))
+        return OutPoint(
+            data[0x00:0x20],
+            ckb.molecule.U32.read(data[0x20:0x24])
+        )
 
     def pack(self):
-        r = bytearray()
-        r.extend(self.tx_hash)
-        r.extend(self.index.to_bytes(4, 'little'))
-        return r
+        return ckb.molecule.Struct([
+            ckb.molecule.Byte32(self.tx_hash),
+            ckb.molecule.U32(self.index),
+        ]).pack()
 
     def json(self):
         return {
@@ -222,7 +227,7 @@ class CellInput:
         self.previous_output = previous_output
 
     def __repr__(self):
-        return f'CellInput(since={self.since}, previous_output={self.previous_output})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.since == other.since
@@ -233,15 +238,15 @@ class CellInput:
     def read(data: bytearray):
         assert len(data) == 44
         return CellInput(
-            int.from_bytes(data[:8], 'little'),
-            OutPoint.read(data[8:44])
+            ckb.molecule.U64.read(data[0:8]),
+            OutPoint.read(data[8:44]),
         )
 
     def pack(self):
-        r = bytearray()
-        r.extend(self.since.to_bytes(8, 'little'))
-        r.extend(self.previous_output.pack())
-        return r
+        return ckb.molecule.Struct([
+            ckb.molecule.U64(self.since),
+            self.previous_output,
+        ]).pack()
 
     def json(self):
         return {
@@ -266,7 +271,7 @@ class CellOutput:
         self.type = type
 
     def __repr__(self):
-        return f'CellOutput(capacity={self.capacity}, lock={self.lock}, type={self.type})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.capacity == other.capacity
@@ -276,33 +281,19 @@ class CellOutput:
 
     @staticmethod
     def read(data: bytearray):
-        assert len(data) >= 4
-        assert len(data) == int.from_bytes(data[0:4], 'little')
-        reader = io.BufferedReader(io.BytesIO(data[4 + 4 * 3:]))
-        capacity = int.from_bytes(reader.read(8), 'little')
-        size = int.from_bytes(reader.peek(4)[:4], 'little')
-        lock = Script.read(reader.read(size))
-        if reader.peek(1)[0]:
-            size = int.from_bytes(reader.peek(4)[:4], 'little')
-            type = Script.read(reader.read(size))
-        else:
-            type = None
-        return CellOutput(capacity, lock, type)
+        result = ckb.molecule.Dynvec.read(data)
+        return CellOutput(
+            ckb.molecule.U64.read(result[0]),
+            Script.read(result[1]),
+            Script.read(result[2]) if result[2] else None
+        )
 
     def pack(self):
-        line = []
-        line.append(self.capacity.to_bytes(8, 'little'))
-        line.append(self.lock.pack())
-        line.append(self.type.pack() if self.type else bytearray([0]))
-        head = bytearray()
-        body = bytearray()
-        head_size = 4 + 4 * len(line)
-        body_size = 0
-        for data in line:
-            head.extend((head_size + body_size).to_bytes(4, 'little'))
-            body.extend(data)
-            body_size += len(data)
-        return (head_size + body_size).to_bytes(4, 'little') + head + body
+        return ckb.molecule.Dynvec([
+            ckb.molecule.U64(self.capacity),
+            self.lock,
+            ckb.molecule.Option(self.type),
+        ]).pack()
 
     def json(self):
         return {
@@ -335,7 +326,7 @@ class CellDep:
         self.dep_type = dep_type
 
     def __repr__(self):
-        return f'CellDep(out_point={self.out_point}, dep_type={self.dep_type})'
+        return json.dumps(self.json())
 
     def __eq__(self, other):
         a = self.out_point == other.out_point
@@ -345,15 +336,16 @@ class CellDep:
     @staticmethod
     def read(data: bytearray):
         assert len(data) == 37
-        out_point = OutPoint.read(data[0:36])
-        dep_type = int(data[36])
-        return CellDep(out_point, dep_type)
+        return CellDep(
+            OutPoint.read(data[0:36]),
+            int(data[36]),
+        )
 
     def pack(self):
-        r = bytearray()
-        r.extend(self.out_point.pack())
-        r.append(self.dep_type)
-        return r
+        return ckb.molecule.Struct([
+            self.out_point,
+            ckb.molecule.Byte(self.dep_type),
+        ]).pack()
 
     def json(self):
         return {
@@ -366,73 +358,187 @@ class CellDep:
 
 
 if __name__ == '__main__':
-    out_point = OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
+    cell_dep = CellDep(
+        OutPoint(
+            ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+            ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
+        ),
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type
     )
-    cell_dep = CellDep(out_point, 1)
     assert CellDep.read(cell_dep.pack()) == cell_dep
 
 
-# table RawTransaction {
-#     version:        Uint32,
-#     cell_deps:      CellDepVec,
-#     header_deps:    Byte32Vec,
-#     inputs:         CellInputVec,
-#     outputs:        CellOutputVec,
-#     outputs_data:   BytesVec,
-# }
+class RawTransaction:
+    def __init__(
+        self,
+        version: int,
+        cell_deps: typing.List[CellDep],
+        header_deps: typing.List[bytearray],
+        inputs: typing.List[CellInput],
+        outputs: typing.List[CellOutput],
+        outputs_data: typing.List[bytearray]
+    ):
+        self.version = version
+        self.cell_deps = cell_deps
+        self.header_deps = header_deps
+        self.inputs = inputs
+        self.outputs = outputs
+        self.outputs_data = outputs_data
 
-# table Transaction {
-#     raw:            RawTransaction,
-#     witnesses:      BytesVec,
-# }
+    def __repr__(self):
+        return json.dumps(self.json())
 
-# struct RawHeader {
-#     version:                Uint32,
-#     compact_target:         Uint32,
-#     timestamp:              Uint64,
-#     number:                 Uint64,
-#     epoch:                  Uint64,
-#     parent_hash:            Byte32,
-#     transactions_root:      Byte32,
-#     proposals_hash:         Byte32,
-#     extra_hash:             Byte32,
-#     dao:                    Byte32,
-# }
+    def __eq__(self, other):
+        a = self.version == other.version
+        b = self.cell_deps == other.cell_deps
+        c = self.header_deps == other.header_deps
+        d = self.inputs == other.inputs
+        e = self.outputs == other.outputs
+        f = self.outputs_data == other.outputs_data
+        return a and b and c and d and e and f
 
-# struct Header {
-#     raw:                    RawHeader,
-#     nonce:                  Uint128,
-# }
+    @staticmethod
+    def read(data: bytearray):
+        result = ckb.molecule.Dynvec.read(data)
+        return RawTransaction(
+            ckb.molecule.U32.read(result[0]),
+            [CellDep.read(e) for e in ckb.molecule.Fixvec.read(result[1])],
+            [ckb.molecule.Byte32.read(e) for e in ckb.molecule.Fixvec.read(result[2])],
+            [CellInput.read(e) for e in ckb.molecule.Fixvec.read(result[3])],
+            [CellOutput.read(e) for e in ckb.molecule.Dynvec.read(result[4])],
+            [ckb.molecule.Bytenn.read(e) for e in ckb.molecule.Dynvec.read(result[5])]
+        )
 
-# table UncleBlock {
-#     header:                 Header,
-#     proposals:              ProposalShortIdVec,
-# }
+    def pack(self):
+        return ckb.molecule.Dynvec([
+            ckb.molecule.U32(self.version),
+            ckb.molecule.Fixvec(self.cell_deps),
+            ckb.molecule.Fixvec([ckb.molecule.Byte32(e) for e in self.header_deps]),
+            ckb.molecule.Fixvec(self.inputs),
+            ckb.molecule.Dynvec(self.outputs),
+            ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.outputs_data])
+        ]).pack()
 
-# table Block {
-#     header:                 Header,
-#     uncles:                 UncleBlockVec,
-#     transactions:           TransactionVec,
-#     proposals:              ProposalShortIdVec,
-# }
+    def json(self):
+        return {
+            'version': hex(self.version),
+            'cell_deps': [e.json() for e in self.cell_deps],
+            'header_deps': ['0x' + e.hex() for e in self.header_deps],
+            'inputs': [e.json() for e in self.inputs],
+            'outputs': [e.json() for e in self.outputs],
+            'outputs_data': ['0x' + e.hex() for e in self.outputs_data],
+        }
 
-# table BlockV1 {
-#     header:                 Header,
-#     uncles:                 UncleBlockVec,
-#     transactions:           TransactionVec,
-#     proposals:              ProposalShortIdVec,
-#     extension:              Bytes,
-# }
 
-# table CellbaseWitness {
-#     lock:    Script,
-#     message: Bytes,
-# }
+if __name__ == '__main__':
+    raw_transaction = RawTransaction(0, [], [], [], [], [])
+    raw_transaction.cell_deps.append(CellDep(OutPoint(
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
+    ),
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type
+    ))
+    raw_transaction.header_deps.append(ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash)
+    raw_transaction.inputs.append(CellInput(42, OutPoint(
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
+    )))
+    raw_transaction.outputs.append(CellOutput(
+        0xffff,
+        Script(
+            ckb.config.current.scripts.secp256k1_blake160.code_hash,
+            ckb.config.current.scripts.secp256k1_blake160.hash_type,
+            bytearray([0x00]) * 20,
+        ),
+        None
+    ))
+    raw_transaction.outputs_data.append(bytearray([0x42]))
+    assert hash(raw_transaction.pack()).hex() == '69b6dc37741e1b6e747120135b6efaf5162277f7f3db59211fe791c9ad9121cc'
+    assert RawTransaction.read(raw_transaction.pack()) == raw_transaction
 
-# table WitnessArgs {
-#     lock:                   BytesOpt,          // Lock args
-#     input_type:             BytesOpt,          // Type args for input
-#     output_type:            BytesOpt,          // Type args for output
-# }
+
+class Transaction:
+    def __init__(self, raw: RawTransaction, witnesses: typing.List[bytearray]):
+        self.raw = raw
+        self.witnesses = witnesses
+
+    def __repr__(self):
+        return json.dumps(self.json())
+
+    def __eq__(self, other):
+        a = self.raw == other.raw
+        b = self.witnesses == other.witnesses
+        return a and b
+
+    @staticmethod
+    def read(data: bytearray):
+        result = ckb.molecule.Dynvec.read(data)
+        return Transaction(
+            RawTransaction.read(result[0]),
+            [ckb.molecule.Bytenn.read(e) for e in ckb.molecule.Dynvec.read(result[1])],
+        )
+
+    def pack(self):
+        return ckb.molecule.Dynvec([
+            self.raw,
+            ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.witnesses])
+        ]).pack()
+
+    def json(self):
+        r = self.raw.json()
+        r['witnesses'] = [f'0x{e.hex()}' for e in self.witnesses]
+        return r
+
+
+if __name__ == '__main__':
+    transaction = Transaction(RawTransaction(0, [], [], [], [], []), [])
+    assert Transaction.read(transaction.pack()) == transaction
+
+
+class WitnessArgs:
+    def __init__(
+        self,
+        lock: typing.Optional[bytearray],
+        input_type: typing.Optional[bytearray],
+        output_type: typing.Optional[bytearray]
+    ):
+        self.lock = lock
+        self.input_type = input_type
+        self.output_type = output_type
+
+    def __repr__(self):
+        return json.dumps(self.json())
+
+    def __eq__(self, other):
+        a = self.lock == other.lock
+        b = self.input_type == other.input_type
+        c = self.output_type == other.output_type
+        return a and b and c
+
+    @staticmethod
+    def read(data: bytearray):
+        result = ckb.molecule.Dynvec.read(data)
+        return WitnessArgs(
+            ckb.molecule.Bytenn.read(result[0]) if result[0] else None,
+            ckb.molecule.Bytenn.read(result[1]) if result[1] else None,
+            ckb.molecule.Bytenn.read(result[2]) if result[2] else None,
+        )
+
+    def pack(self):
+        return ckb.molecule.Dynvec([
+            ckb.molecule.Option(ckb.molecule.Bytenn(self.lock) if self.lock else None),
+            ckb.molecule.Option(ckb.molecule.Bytenn(self.input_type) if self.input_type else None),
+            ckb.molecule.Option(ckb.molecule.Bytenn(self.output_type) if self.output_type else None),
+        ]).pack()
+
+    def json(self):
+        return {
+            'lock': f'0x{self.lock.hex()}' if self.lock else None,
+            'input_type': f'0x{self.input_type.hex()}' if self.input_type else None,
+            'output_type': f'0x{self.output_type.hex()}' if self.output_type else None,
+        }
+
+
+if __name__ == '__main__':
+    witness_args = WitnessArgs(bytearray([0x01]), bytearray([0x02]), bytearray([0x03]))
+    assert WitnessArgs.read(witness_args.pack()) == witness_args
