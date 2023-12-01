@@ -328,10 +328,51 @@ if __name__ == '__main__':
     cell_output = CellOutput(0xffff, lock, None)
     assert CellOutput.read(cell_output.pack()) == cell_output
 
-# struct CellDep {
-#     out_point:      OutPoint,
-#     dep_type:       byte,
-# }
+
+class CellDep:
+    def __init__(self, out_point: OutPoint, dep_type: int):
+        self.out_point = out_point
+        self.dep_type = dep_type
+
+    def __repr__(self):
+        return f'CellDep(out_point={self.out_point}, dep_type={self.dep_type})'
+
+    def __eq__(self, other):
+        a = self.out_point == other.out_point
+        b = self.dep_type == other.dep_type
+        return a and b
+
+    @staticmethod
+    def read(data: bytearray):
+        assert len(data) == 37
+        out_point = OutPoint.read(data[0:36])
+        dep_type = int(data[36])
+        return CellDep(out_point, dep_type)
+
+    def pack(self):
+        r = bytearray()
+        r.extend(self.out_point.pack())
+        r.append(self.dep_type)
+        return r
+
+    def json(self):
+        return {
+            'out_point': self.out_point.json(),
+            'dep_type': {
+                0: 'code',
+                1: 'dep_group',
+            }[self.dep_type]
+        }
+
+
+if __name__ == '__main__':
+    out_point = OutPoint(
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
+        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
+    )
+    cell_dep = CellDep(out_point, 1)
+    assert CellDep.read(cell_dep.pack()) == cell_dep
+
 
 # table RawTransaction {
 #     version:        Uint32,
