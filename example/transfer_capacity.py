@@ -5,8 +5,6 @@ import itertools
 import json
 
 sender_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
-accept_addr = 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqdrcaufs8qeu8wvvy0myyedek4vqad9qeq3gc4cf'
-accept_capacity = 1000 * 100000000
 sender_pubkey = sender_prikey.pubkey()
 sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
 sender_script = ckb.core.Script(
@@ -15,7 +13,18 @@ sender_script = ckb.core.Script(
     sender_args,
 )
 sender_capacity = 0
-accept_script = ckb.core.address_decode(accept_addr)
+
+accept_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000002)
+accept_pubkey = accept_prikey.pubkey()
+accept_args = ckb.core.hash(accept_pubkey.pack())[:20]
+accept_script = ckb.core.Script(
+    ckb.config.current.scripts.secp256k1_blake160.code_hash,
+    ckb.config.current.scripts.secp256k1_blake160.hash_type,
+    accept_args,
+)
+accept_capacity = 1000 * 100000000
+assert accept_capacity >= 61 * 100000000
+
 change_capacity = 0
 
 tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
