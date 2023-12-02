@@ -10,6 +10,7 @@ setuptools.setup(
     description='Python SDK for CKB',
     packages=['ckb'],
     install_requires=[
-        'requests'
+        'requests',
+        'pytest'
     ],
 )

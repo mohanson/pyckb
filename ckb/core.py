@@ -105,23 +105,6 @@ class PubKey:
         }
 
 
-if __name__ == '__main__':
-    # Double checked by https://ckb.tools/generator
-    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
-    pubkey = prikey.pubkey()
-    assert pubkey.x == 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
-    assert pubkey.y == 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
-    assert pubkey.pack().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
-    assert PubKey.read(pubkey.pack()) == pubkey
-    assert hash(pubkey.pack())[:20].hex() == '75178f34549c5fe9cd1a0c57aebd01e7ddf9249e'
-
-
-if __name__ == '__main__':
-    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
-    sig = prikey.sign(bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'))
-    print(sig.hex())
-
-
 class Script:
     def __init__(self, code_hash: bytearray, hash_type: int, args: bytearray):
         assert len(code_hash) == 32
@@ -191,22 +174,6 @@ def address_decode(address: str):
     return Script(code_hash, hash_type, args)
 
 
-if __name__ == '__main__':
-    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
-    pubkey = prikey.pubkey()
-    args = hash(pubkey.pack())[:20].hex()
-    script = Script(
-        ckb.config.current.scripts.secp256k1_blake160.code_hash,
-        ckb.config.current.scripts.secp256k1_blake160.hash_type,
-        bytearray.fromhex(args)
-    )
-    addr = address_encode(script)
-    assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
-    assert address_decode(addr) == script
-    assert hash(script.pack()).hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
-    assert Script.read(script.pack()) == script
-
-
 class OutPoint:
     def __init__(self, tx_hash: bytearray, index: int):
         assert len(tx_hash) == 32
@@ -242,14 +209,6 @@ class OutPoint:
         }
 
 
-if __name__ == '__main__':
-    out_point = OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
-    )
-    assert OutPoint.read(out_point.pack()) == out_point
-
-
 class CellInput:
     def __init__(self, since: int, previous_output: OutPoint):
         self.since = since
@@ -282,15 +241,6 @@ class CellInput:
             'since': hex(self.since),
             'previous_output': self.previous_output.json()
         }
-
-
-if __name__ == '__main__':
-    out_point = OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
-    )
-    cell_input = CellInput(42, out_point)
-    assert CellInput.read(cell_input.pack()) == cell_input
 
 
 class CellOutput:
@@ -332,23 +282,6 @@ class CellOutput:
         }
 
 
-if __name__ == '__main__':
-    lock = Script(
-        ckb.config.current.scripts.secp256k1_blake160.code_hash,
-        ckb.config.current.scripts.secp256k1_blake160.hash_type,
-        bytearray([0x00]) * 20,
-    )
-    type = Script(
-        ckb.config.current.scripts.dao.code_hash,
-        ckb.config.current.scripts.dao.hash_type,
-        bytearray([0x00]) * 10,
-    )
-    cell_output = CellOutput(0xffff, lock, type)
-    assert CellOutput.read(cell_output.pack()) == cell_output
-    cell_output = CellOutput(0xffff, lock, None)
-    assert CellOutput.read(cell_output.pack()) == cell_output
-
-
 class CellDep:
     def __init__(self, out_point: OutPoint, dep_type: int):
         self.out_point = out_point
@@ -384,17 +317,6 @@ class CellDep:
                 1: 'dep_group',
             }[self.dep_type]
         }
-
-
-if __name__ == '__main__':
-    cell_dep = CellDep(
-        OutPoint(
-            ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-            ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
-        ),
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type
-    )
-    assert CellDep.read(cell_dep.pack()) == cell_dep
 
 
 class RawTransaction:
@@ -459,33 +381,6 @@ class RawTransaction:
         }
 
 
-if __name__ == '__main__':
-    raw_transaction = RawTransaction(0, [], [], [], [], [])
-    raw_transaction.cell_deps.append(CellDep(OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
-    ),
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type
-    ))
-    raw_transaction.header_deps.append(ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash)
-    raw_transaction.inputs.append(CellInput(42, OutPoint(
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-        ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index,
-    )))
-    raw_transaction.outputs.append(CellOutput(
-        0xffff,
-        Script(
-            ckb.config.current.scripts.secp256k1_blake160.code_hash,
-            ckb.config.current.scripts.secp256k1_blake160.hash_type,
-            bytearray([0x00]) * 20,
-        ),
-        None
-    ))
-    raw_transaction.outputs_data.append(bytearray([0x42]))
-    assert hash(raw_transaction.pack()).hex() == '69b6dc37741e1b6e747120135b6efaf5162277f7f3db59211fe791c9ad9121cc'
-    assert RawTransaction.read(raw_transaction.pack()) == raw_transaction
-
-
 class Transaction:
     def __init__(self, raw: RawTransaction, witnesses: typing.List[bytearray]):
         self.raw = raw
@@ -517,11 +412,6 @@ class Transaction:
         r = self.raw.json()
         r['witnesses'] = [f'0x{e.hex()}' for e in self.witnesses]
         return r
-
-
-if __name__ == '__main__':
-    transaction = Transaction(RawTransaction(0, [], [], [], [], []), [])
-    assert Transaction.read(transaction.pack()) == transaction
 
 
 class WitnessArgs:
@@ -566,8 +456,3 @@ class WitnessArgs:
             'input_type': f'0x{self.input_type.hex()}' if self.input_type else None,
             'output_type': f'0x{self.output_type.hex()}' if self.output_type else None,
         }
-
-
-if __name__ == '__main__':
-    witness_args = WitnessArgs(bytearray([0x01]), bytearray([0x02]), bytearray([0x03]))
-    assert WitnessArgs.read(witness_args.pack()) == witness_args
