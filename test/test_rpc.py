@@ -4,7 +4,7 @@ import ckb.rpc
 
 
 def test_get_cells():
-    prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
+    prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.pack())[:20].hex()
     script = ckb.core.Script(
@@ -17,7 +17,7 @@ def test_get_cells():
 
 
 def test_get_cells_capacity():
-    prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
+    prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.pack())[:20].hex()
     script = ckb.core.Script(

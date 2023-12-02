@@ -4,7 +4,7 @@ import ckb.rpc
 import itertools
 import json
 
-sender_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
+sender_prikey = ckb.core.PriKey(1)
 sender_pubkey = sender_prikey.pubkey()
 sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
 sender_script = ckb.core.Script(
@@ -14,7 +14,7 @@ sender_script = ckb.core.Script(
 )
 sender_capacity = 0
 
-accept_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000002)
+accept_prikey = ckb.core.PriKey(2)
 accept_pubkey = accept_prikey.pubkey()
 accept_args = ckb.core.hash(accept_pubkey.pack())[:20]
 accept_script = ckb.core.Script(
