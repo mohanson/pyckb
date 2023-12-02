@@ -35,5 +35,5 @@ def test_addr():
     addr = ckb.core.address_encode(script)
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
     assert ckb.core.address_decode(addr) == script
-    assert ckb.core.hash(script.pack()).hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
+    assert script.hash().hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert ckb.core.Script.read(script.pack()) == script

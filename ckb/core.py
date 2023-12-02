@@ -148,6 +148,9 @@ class Script:
             'args': f'0x{self.args.hex()}',
         }
 
+    def hash(self):
+        return hash(self.pack())
+
 
 def address_encode(script: Script):
     # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
@@ -319,7 +322,7 @@ class CellDep:
         }
 
 
-class RawTransaction:
+class TransactionRaw:
     def __init__(
         self,
         version: int,
@@ -351,7 +354,7 @@ class RawTransaction:
     @staticmethod
     def read(data: bytearray):
         result = ckb.molecule.Dynvec.read(data)
-        return RawTransaction(
+        return TransactionRaw(
             ckb.molecule.U32.read(result[0]),
             [CellDep.read(e) for e in ckb.molecule.Fixvec.read(result[1])],
             [ckb.molecule.Byte32.read(e) for e in ckb.molecule.Fixvec.read(result[2])],
@@ -380,9 +383,12 @@ class RawTransaction:
             'outputs_data': ['0x' + e.hex() for e in self.outputs_data],
         }
 
+    def hash(self):
+        return hash(self.pack())
+
 
 class Transaction:
-    def __init__(self, raw: RawTransaction, witnesses: typing.List[bytearray]):
+    def __init__(self, raw: TransactionRaw, witnesses: typing.List[bytearray]):
         self.raw = raw
         self.witnesses = witnesses
 
@@ -398,7 +404,7 @@ class Transaction:
     def read(data: bytearray):
         result = ckb.molecule.Dynvec.read(data)
         return Transaction(
-            RawTransaction.read(result[0]),
+            TransactionRaw.read(result[0]),
             [ckb.molecule.Bytenn.read(e) for e in ckb.molecule.Dynvec.read(result[1])],
         )
 

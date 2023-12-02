@@ -4,9 +4,8 @@ import ckb.rpc
 import itertools
 import json
 
-sender_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
-accept_addr = 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqdrcaufs8qeu8wvvy0myyedek4vqad9qeq3gc4cf'
-accept_capacity = 1000 * 100000000
+sender_prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000002)
+accept_addr = 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
 sender_pubkey = sender_prikey.pubkey()
 sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
 sender_script = ckb.core.Script(
@@ -16,7 +15,7 @@ sender_script = ckb.core.Script(
 )
 sender_capacity = 0
 accept_script = ckb.core.address_decode(accept_addr)
-change_capacity = 0
+accept_capacity = 0
 
 tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
 tx.raw.cell_deps.append(ckb.core.CellDep(
@@ -27,8 +26,6 @@ tx.raw.cell_deps.append(ckb.core.CellDep(
     ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type,
 ))
 tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
-tx.raw.outputs_data.append(bytearray())
-tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, sender_script, None))
 tx.raw.outputs_data.append(bytearray())
 
 search = ckb.rpc.get_cells_iter({
@@ -56,11 +53,9 @@ for cell in search:
         ).pack())
     else:
         tx.witnesses.append(bytearray())
-    change_capacity = sender_capacity - accept_capacity - len(tx.pack()) - 4
-    if change_capacity > 61 * 100000000:
-        break
 
-tx.raw.outputs[-1].capacity = change_capacity
+accept_capacity = sender_capacity - len(tx.pack()) - 4
+tx.raw.outputs[0].capacity = accept_capacity
 
 sign_data = bytearray()
 sign_data.extend(tx.raw.hash())
