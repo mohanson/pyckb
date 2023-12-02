@@ -13,6 +13,35 @@ class ObjectDict(dict):
         self[name] = value
 
 
+develop = ObjectDict({
+    'hrp': 'ckt',
+    'url': 'http://18.162.168.78:8114',
+    'scripts': {
+        'dao': {
+            'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
+            'hash_type': 1,
+            'cell_dep': {
+                'out_point': {
+                    'tx_hash': bytearray.fromhex('44b3212de8c8b1aaabf241c3526bf44264e8acbda0cb9ac353d4bd07fc34021e'),
+                    'index': 2,
+                },
+                'dep_type': 0,
+            }
+        },
+        'secp256k1_blake160': {
+            'code_hash': bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'),
+            'hash_type': 1,
+            'cell_dep': {
+                'out_point': {
+                    'tx_hash': bytearray.fromhex('94dfbac7f4ccb5b1f41b1cc314abae9df3f85108af214c5aaff569c8ada0885e'),
+                    'index': 0,
+                },
+                'dep_type': 1,
+            }
+        },
+    }
+})
+
 mainnet = ObjectDict({
     'hrp': 'ckb',
     # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
