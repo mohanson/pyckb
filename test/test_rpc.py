@@ -28,8 +28,10 @@ def test_get_cells_capacity():
     search = {'script': script.json(), 'script_type': 'lock'}
     assert int(ckb.rpc.get_cells_capacity(search)['capacity'], 16) >= 0
 
+
 def test_get_indexer_tip():
     assert int(ckb.rpc.get_indexer_tip()['block_number'], 16) >= 0
+
 
 def test_get_tip_block_numner():
     assert int(ckb.rpc.get_tip_block_number(), 16) >= 0
