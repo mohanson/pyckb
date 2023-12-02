@@ -1,7 +1,7 @@
 import ckb.config
 import ckb.core
 
-prikey = ckb.core.PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
+prikey = ckb.core.PriKey(1)
 print(f'prikey = {prikey.pack().hex()}')
 pubkey = prikey.pubkey()
 print(f'pubkey = {pubkey.pack().hex()}')
