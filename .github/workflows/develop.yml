@@ -15,7 +15,4 @@ jobs:
       - name: Test
         run: |
           python setup.py develop
-          python ckb/core.py
-          python ckb/rpc.py
-          python example/generate_account.py
-          python example/get_capacity.py
+          pytest -v

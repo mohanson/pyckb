@@ -12,6 +12,6 @@ script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.hash_type,
     args,
 )
-print(f'  hash = {ckb.core.hash(script.pack()).hex()}')
+print(f'  hash = {script.hash().hex()}')
 addr = ckb.core.address_encode(script)
 print(f'  addr = {addr}')
