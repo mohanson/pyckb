@@ -7,6 +7,16 @@ import requests
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 
 
+def get_block_by_number(block_number):
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_block_by_number',
+        'params': [hex(block_number)]
+    })
+    return r.json()['result']
+
+
 def get_cells(search_key, order, limit, after):
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
