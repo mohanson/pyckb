@@ -5,6 +5,7 @@ import ckb.secp256k1
 import hashlib
 import io
 import json
+import random
 import typing
 
 
@@ -39,6 +40,28 @@ class PriKey:
     def pubkey(self):
         pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
+
+    def sign(self, data: bytearray):
+        assert len(data) == 32
+        m = ckb.secp256k1.Fr(int.from_bytes(data))
+        while True:
+            k = ckb.secp256k1.Fr(random.randint(0, ckb.secp256k1.N - 1))
+            R = ckb.secp256k1.G * k
+            r = ckb.secp256k1.Fr(R.x.x)
+            if r.x == 0:
+                continue
+            s = (m + ckb.secp256k1.Fr(self.n) * r) / k
+            if s.x == 0:
+                continue
+            v = 0
+            if R.y.x & 1 == 1:
+                v |= 1
+            if R.x.x >= ckb.secp256k1.N:
+                v |= 2
+            if s.x > ckb.secp256k1.N // 2:
+                s.x = ckb.secp256k1.N - s.x
+                v ^= 1
+            return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
 
 
 class PubKey:
@@ -91,6 +114,12 @@ if __name__ == '__main__':
     assert pubkey.pack().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
     assert PubKey.read(pubkey.pack()) == pubkey
     assert hash(pubkey.pack())[:20].hex() == '75178f34549c5fe9cd1a0c57aebd01e7ddf9249e'
+
+
+if __name__ == '__main__':
+    prikey = PriKey(0x0000000000000000000000000000000000000000000000000000000000000001)
+    sig = prikey.sign(bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'))
+    print(sig.hex())
 
 
 class Script:
