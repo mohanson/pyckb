@@ -4,8 +4,6 @@ import ckb.rpc
 import itertools
 import json
 
-ckb.config.current = ckb.config.develop
-
 sender_prikey = ckb.core.PriKey(1)
 sender_pubkey = sender_prikey.pubkey()
 sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
