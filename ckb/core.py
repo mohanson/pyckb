@@ -58,9 +58,8 @@ class PriKey:
                 v |= 1
             if R.x.x >= ckb.secp256k1.N:
                 v |= 2
-            if s.x > ckb.secp256k1.N // 2:
-                s.x = ckb.secp256k1.N - s.x
-                v ^= 1
+            # Here we do not adjust the sign of s.
+            # Doc: https://ethereum.stackexchange.com/questions/55245/why-is-s-in-transaction-signature-limited-to-n-21
             return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
 
 
