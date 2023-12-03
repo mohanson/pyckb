@@ -29,7 +29,7 @@ def get_cells(search_key, order, limit, after):
 
 def get_cells_iter(search_key):
     cursor = None
-    limits = 8
+    limits = 256
     for _ in itertools.repeat(0):
         r = get_cells(search_key, 'asc', hex(limits), cursor)
         cursor = r['last_cursor']

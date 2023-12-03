@@ -32,7 +32,7 @@ search = ckb.rpc.get_cells({
     'filter': {
         'script_len_range': ['0x0', '0x1']
     }
-}, 'asc', '0xff', None)['objects']
+}, 'asc', '0x100', None)['objects']
 for cell in search:
     cell_out_point = ckb.core.OutPoint(
         bytearray.fromhex(cell['out_point']['tx_hash'][2:]),
