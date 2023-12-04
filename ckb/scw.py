@@ -51,7 +51,6 @@ class Scw:
 
     def transfer(self, script: ckb.core.Script, capacity: int):
         assert capacity >= 61 * 100000000
-        sender_script = self.script
         accept_script = script
         change_script = self.script
         sender_capacity = 0
@@ -98,7 +97,7 @@ class Scw:
         return tx_hash
 
     def heritage(self, script: ckb.core.Script):
-        # Transfer all livecell(up to 256) to the specified script.
+        # Transfer all livecell to the specified script.
         sender_capacity = 0
         accept_capacity = 0
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
