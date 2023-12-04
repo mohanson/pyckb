@@ -3,7 +3,6 @@ import ckb.config
 import ckb.molecule
 import ckb.secp256k1
 import hashlib
-import io
 import json
 import random
 import typing
