@@ -1,5 +1,3 @@
-import io
-
 # Doc: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0008-serialization/0008-serialization.md
 
 
