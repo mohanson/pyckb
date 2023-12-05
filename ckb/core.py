@@ -7,6 +7,9 @@ import json
 import random
 import typing
 
+# 1 ckb = 10 ** 8 shannons
+shannon = 10 ** 8
+
 
 def hash(data: bytearray):
     return bytearray(hashlib.blake2b(data, digest_size=32, person=b'ckb-default-hash').digest())

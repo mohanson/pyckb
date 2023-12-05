@@ -14,6 +14,7 @@ class Scw:
             ckb.config.current.scripts.secp256k1_blake160.hash_type,
             ckb.core.hash(self.pubkey.pack())[:20]
         )
+        self.addr = ckb.core.address_encode(self.script)
 
     def __repr__(self):
         return json.dumps(self.json())

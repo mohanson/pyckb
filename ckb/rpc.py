@@ -13,8 +13,8 @@ def get_block_by_number(block_number):
         'jsonrpc': '2.0',
         'method': 'get_block_by_number',
         'params': [hex(block_number)]
-    })
-    return r.json()['result']
+    }).json()
+    return r['result']
 
 
 def get_cells(search_key, order, limit, after):
@@ -23,8 +23,8 @@ def get_cells(search_key, order, limit, after):
         'jsonrpc': '2.0',
         'method': 'get_cells',
         'params': [search_key, order, limit, after]
-    })
-    return r.json()['result']
+    }).json()
+    return r['result']
 
 
 def get_cells_iter(search_key):
@@ -45,8 +45,8 @@ def get_cells_capacity(search_key):
         'jsonrpc': '2.0',
         'method': 'get_cells_capacity',
         'params': [search_key]
-    })
-    return r.json()['result']
+    }).json()
+    return r['result']
 
 
 def get_indexer_tip():
@@ -55,8 +55,8 @@ def get_indexer_tip():
         'jsonrpc': '2.0',
         'method': 'get_indexer_tip',
         'params': []
-    })
-    return r.json()['result']
+    }).json()
+    return r['result']
 
 
 def get_tip_block_number():
@@ -65,8 +65,8 @@ def get_tip_block_number():
         'jsonrpc': '2.0',
         'method': 'get_tip_block_number',
         'params': []
-    })
-    return r.json()['result']
+    }).json()
+    return r['result']
 
 
 def send_transaction(transaction, outputs_validator):
@@ -75,5 +75,7 @@ def send_transaction(transaction, outputs_validator):
         'jsonrpc': '2.0',
         'method': 'send_transaction',
         'params': [transaction, outputs_validator]
-    })
-    return r.json()['result']
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
