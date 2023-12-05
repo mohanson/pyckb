@@ -85,19 +85,19 @@ class Scw:
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.pack()) - 4
-            if change_capacity > 61 * 100000000:
+            if change_capacity >= 61 * 100000000:
                 break
+        assert change_capacity >= 61 * 100000000
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
         for witness in tx.witnesses:
             sign_data.extend(len(witness).to_bytes(8, 'little'))
             sign_data.extend(witness)
-        sign_data_hash = ckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data_hash)
+        sign_data = ckb.core.hash(sign_data)
+        sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
-        tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
-        return tx_hash
+        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def heritage(self, script: ckb.core.Script):
         # Transfer all livecell to the specified script.
@@ -134,8 +134,8 @@ class Scw:
         for witness in tx.witnesses:
             sign_data.extend(len(witness).to_bytes(8, 'little'))
             sign_data.extend(witness)
-        sign_data_hash = ckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data_hash)
+        sign_data = ckb.core.hash(sign_data)
+        sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
         tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
         return tx_hash
