@@ -30,6 +30,7 @@ class Scw:
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
             'script': self.script.json(),
+            'addr': self.addr,
         }
 
     def livecell(self):
