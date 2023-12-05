@@ -99,9 +99,9 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
-    def heritage(self, script: ckb.core.Script):
-        # Transfer all livecell to the specified script.
+    def transfer_max(self, script: ckb.core.Script):
         assert self.capacity() > 0
+        accept_script = script
         sender_capacity = 0
         accept_capacity = 0
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
@@ -112,7 +112,7 @@ class Scw:
             ),
             ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type,
         ))
-        tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, script, None))
+        tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint(
