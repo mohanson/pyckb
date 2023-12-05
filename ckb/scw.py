@@ -99,7 +99,7 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
-    def transfer_max(self, script: ckb.core.Script):
+    def heritage(self, script: ckb.core.Script):
         assert self.capacity() > 0
         accept_script = script
         sender_capacity = 0
@@ -141,9 +141,6 @@ class Scw:
         return tx_hash
 
     def converge(self):
-        # Merge the smallest 256 livecells.
-        assert self.capacity() > 0
         livecell = list(itertools.islice(self.livecell(), 256))
-        if len(livecell) < 256:
-            return None
+        assert len(livecell) == 256
         return self.heritage(self.script)
