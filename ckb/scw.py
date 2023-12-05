@@ -1,8 +1,8 @@
 import ckb.config
 import ckb.core
 import ckb.rpc
-import json
 import itertools
+import json
 
 
 class Scw:
@@ -53,6 +53,7 @@ class Scw:
 
     def transfer(self, script: ckb.core.Script, capacity: int):
         assert capacity >= 61 * 100000000
+        assert self.capacity() > capacity
         accept_script = script
         change_script = self.script
         sender_capacity = 0
@@ -100,6 +101,7 @@ class Scw:
 
     def heritage(self, script: ckb.core.Script):
         # Transfer all livecell to the specified script.
+        assert self.capacity() > 0
         sender_capacity = 0
         accept_capacity = 0
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
@@ -140,6 +142,7 @@ class Scw:
 
     def converge(self):
         # Merge the smallest 256 livecells.
+        assert self.capacity() > 0
         livecell = list(itertools.islice(self.livecell(), 256))
         if len(livecell) < 256:
             return None
