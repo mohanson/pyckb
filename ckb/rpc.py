@@ -69,6 +69,16 @@ def get_tip_block_number():
     return r['result']
 
 
+def get_transaction(tx_hash, verbosity, only_committed):
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_transaction',
+        'params': [tx_hash, verbosity, only_committed]
+    }).json()
+    return r['result']
+
+
 def send_transaction(transaction, outputs_validator):
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
