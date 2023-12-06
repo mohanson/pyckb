@@ -206,6 +206,10 @@ class OutPoint:
             ckb.molecule.U32(self.index),
         ]).pack()
 
+    @staticmethod
+    def json_read(data: dict):
+        return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
+
     def json(self):
         return {
             'tx_hash': '0x' + self.tx_hash.hex(),

@@ -72,10 +72,7 @@ class Scw:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint(
-                bytearray.fromhex(cell['out_point']['tx_hash'][2:]),
-                int(cell['out_point']['index'], 16)
-            )
+            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -115,10 +112,7 @@ class Scw:
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint(
-                bytearray.fromhex(cell['out_point']['tx_hash'][2:]),
-                int(cell['out_point']['index'], 16)
-            )
+            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
