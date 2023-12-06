@@ -34,10 +34,7 @@ search = ckb.rpc.get_cells({
     }
 }, 'asc', '0x100', None)['objects']
 for cell in search:
-    cell_out_point = ckb.core.OutPoint(
-        bytearray.fromhex(cell['out_point']['tx_hash'][2:]),
-        int(cell['out_point']['index'], 16)
-    )
+    cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
     cell_capacity = int(cell['output']['capacity'], 16)
     cell_input = ckb.core.CellInput(0, cell_out_point)
 
