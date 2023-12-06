@@ -14,6 +14,8 @@ def get_block_by_number(block_number):
         'method': 'get_block_by_number',
         'params': [hex(block_number)]
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 
@@ -24,6 +26,8 @@ def get_cells(search_key, order, limit, after):
         'method': 'get_cells',
         'params': [search_key, order, limit, after]
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 
@@ -46,6 +50,8 @@ def get_cells_capacity(search_key):
         'method': 'get_cells_capacity',
         'params': [search_key]
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 
@@ -56,6 +62,8 @@ def get_indexer_tip():
         'method': 'get_indexer_tip',
         'params': []
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 
@@ -66,6 +74,8 @@ def get_tip_block_number():
         'method': 'get_tip_block_number',
         'params': []
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 
@@ -76,6 +86,8 @@ def get_transaction(tx_hash, verbosity, only_committed):
         'method': 'get_transaction',
         'params': [tx_hash, verbosity, only_committed]
     }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
     return r['result']
 
 

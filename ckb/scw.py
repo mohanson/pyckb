@@ -1,8 +1,8 @@
 import ckb.config
 import ckb.core
 import ckb.rpc
-import json
 import itertools
+import json
 
 
 class Scw:
@@ -53,6 +53,7 @@ class Scw:
 
     def transfer(self, script: ckb.core.Script, capacity: int):
         assert capacity >= 61 * 100000000
+        assert self.capacity() > capacity
         accept_script = script
         change_script = self.script
         sender_capacity = 0
@@ -84,22 +85,23 @@ class Scw:
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.pack()) - 4
-            if change_capacity > 61 * 100000000:
+            if change_capacity >= 61 * 100000000:
                 break
+        assert change_capacity >= 61 * 100000000
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
         for witness in tx.witnesses:
             sign_data.extend(len(witness).to_bytes(8, 'little'))
             sign_data.extend(witness)
-        sign_data_hash = ckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data_hash)
+        sign_data = ckb.core.hash(sign_data)
+        sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
-        tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
-        return tx_hash
+        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def heritage(self, script: ckb.core.Script):
-        # Transfer all livecell to the specified script.
+        assert self.capacity() > 0
+        accept_script = script
         sender_capacity = 0
         accept_capacity = 0
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
@@ -110,7 +112,7 @@ class Scw:
             ),
             ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type,
         ))
-        tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, script, None))
+        tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint(
@@ -132,15 +134,13 @@ class Scw:
         for witness in tx.witnesses:
             sign_data.extend(len(witness).to_bytes(8, 'little'))
             sign_data.extend(witness)
-        sign_data_hash = ckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data_hash)
+        sign_data = ckb.core.hash(sign_data)
+        sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
         tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
         return tx_hash
 
     def converge(self):
-        # Merge the smallest 256 livecells.
         livecell = list(itertools.islice(self.livecell(), 256))
-        if len(livecell) < 256:
-            return None
+        assert len(livecell) == 256
         return self.heritage(self.script)
