@@ -12,7 +12,7 @@ def test_get_cells():
         ckb.config.current.scripts.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
-    search = {'script': script.json(), 'script_type': 'lock'}
+    search = {'script': script.json_pack(), 'script_type': 'lock'}
     assert ckb.rpc.get_cells(search, 'asc', '0xff', None)['objects'] != []
 
 
@@ -25,7 +25,7 @@ def test_get_cells_capacity():
         ckb.config.current.scripts.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
-    search = {'script': script.json(), 'script_type': 'lock'}
+    search = {'script': script.json_pack(), 'script_type': 'lock'}
     assert int(ckb.rpc.get_cells_capacity(search)['capacity'], 16) >= 0
 
 

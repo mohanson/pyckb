@@ -27,7 +27,7 @@ tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, sender_script, None))
 tx.raw.outputs_data.append(bytearray())
 
 search = ckb.rpc.get_cells({
-    'script': sender_script.json(),
+    'script': sender_script.json_pack(),
     'script_type': 'lock',
     'filter': {
         'script_len_range': ['0x0', '0x1']
@@ -62,6 +62,6 @@ sign = sender_prikey.sign(sign_data_hash)
 
 tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
 
-print(json.dumps(tx.json(), indent=4))
-tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+print(json.dumps(tx.json_pack(), indent=4))
+tx_hash = ckb.rpc.send_transaction(tx.json_pack(), 'well_known_scripts_only')
 print(tx_hash)

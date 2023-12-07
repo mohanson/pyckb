@@ -20,7 +20,7 @@ class PriKey:
         self.n = n
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.n == other.n
@@ -34,7 +34,7 @@ class PriKey:
     def molecule_pack(self):
         return bytearray(self.n.to_bytes(32, byteorder='big'))
 
-    def json(self):
+    def json_pack(self):
         return {
             'n': f'0x{self.n:064x}'
         }
@@ -71,7 +71,7 @@ class PubKey:
         self.y = y
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.x == other.x
@@ -99,7 +99,7 @@ class PubKey:
         r.extend(self.x.to_bytes(32, byteorder='big'))
         return r
 
-    def json(self):
+    def json_pack(self):
         return {
             'x': f'0x{self.x:064x}',
             'y': f'0x{self.y:064x}'
@@ -115,7 +115,7 @@ class Script:
         self.args = args
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.code_hash == other.code_hash
@@ -138,7 +138,7 @@ class Script:
             ckb.molecule.Bytenn(self.args)
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
             'code_hash': f'0x{self.code_hash.hex()}',
             'hash_type': {
@@ -185,7 +185,7 @@ class OutPoint:
         self.index = index
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.tx_hash == other.tx_hash
@@ -207,10 +207,10 @@ class OutPoint:
         ]).molecule_pack()
 
     @staticmethod
-    def json_read(data: dict):
+    def json_pack_read(data: dict):
         return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
 
-    def json(self):
+    def json_pack(self):
         return {
             'tx_hash': '0x' + self.tx_hash.hex(),
             'index': hex(self.index),
@@ -223,7 +223,7 @@ class CellInput:
         self.previous_output = previous_output
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.since == other.since
@@ -244,10 +244,10 @@ class CellInput:
             self.previous_output,
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
             'since': hex(self.since),
-            'previous_output': self.previous_output.json()
+            'previous_output': self.previous_output.json_pack()
         }
 
 
@@ -258,7 +258,7 @@ class CellOutput:
         self.type = type
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.capacity == other.capacity
@@ -282,11 +282,11 @@ class CellOutput:
             ckb.molecule.Option(self.type),
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
             'capacity': hex(self.capacity),
-            'lock': self.lock.json(),
-            'type': self.type.json() if self.type else None
+            'lock': self.lock.json_pack(),
+            'type': self.type.json_pack() if self.type else None
         }
 
 
@@ -296,7 +296,7 @@ class CellDep:
         self.dep_type = dep_type
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.out_point == other.out_point
@@ -317,9 +317,9 @@ class CellDep:
             ckb.molecule.Byte(self.dep_type),
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
-            'out_point': self.out_point.json(),
+            'out_point': self.out_point.json_pack(),
             'dep_type': {
                 0: 'code',
                 1: 'dep_group',
@@ -345,7 +345,7 @@ class TransactionRaw:
         self.outputs_data = outputs_data
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.version == other.version
@@ -378,13 +378,13 @@ class TransactionRaw:
             ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.outputs_data])
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
             'version': hex(self.version),
-            'cell_deps': [e.json() for e in self.cell_deps],
+            'cell_deps': [e.json_pack() for e in self.cell_deps],
             'header_deps': ['0x' + e.hex() for e in self.header_deps],
-            'inputs': [e.json() for e in self.inputs],
-            'outputs': [e.json() for e in self.outputs],
+            'inputs': [e.json_pack() for e in self.inputs],
+            'outputs': [e.json_pack() for e in self.outputs],
             'outputs_data': ['0x' + e.hex() for e in self.outputs_data],
         }
 
@@ -398,7 +398,7 @@ class Transaction:
         self.witnesses = witnesses
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.raw == other.raw
@@ -419,8 +419,8 @@ class Transaction:
             ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.witnesses])
         ]).molecule_pack()
 
-    def json(self):
-        r = self.raw.json()
+    def json_pack(self):
+        r = self.raw.json_pack()
         r['witnesses'] = [f'0x{e.hex()}' for e in self.witnesses]
         return r
 
@@ -437,7 +437,7 @@ class WitnessArgs:
         self.output_type = output_type
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.lock == other.lock
@@ -461,7 +461,7 @@ class WitnessArgs:
             ckb.molecule.Option(ckb.molecule.Bytenn(self.output_type) if self.output_type else None),
         ]).molecule_pack()
 
-    def json(self):
+    def json_pack(self):
         return {
             'lock': f'0x{self.lock.hex()}' if self.lock else None,
             'input_type': f'0x{self.input_type.hex()}' if self.input_type else None,

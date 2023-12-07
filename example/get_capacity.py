@@ -10,7 +10,7 @@ script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.hash_type,
     bytearray.fromhex(args)
 )
-search = {'script': script.json(), 'script_type': 'lock', 'with_data': False}
+search = {'script': script.json_pack(), 'script_type': 'lock', 'with_data': False}
 
 capacity_all = 0
 capacity_dao = 0

@@ -17,7 +17,7 @@ class Scw:
         self.addr = ckb.core.address_encode(self.script)
 
     def __repr__(self):
-        return json.dumps(self.json())
+        return json.dumps(self.json_pack())
 
     def __eq__(self, other):
         a = self.prikey == other.prikey
@@ -25,17 +25,17 @@ class Scw:
         c = self.script == other.script
         return a and b and c
 
-    def json(self):
+    def json_pack(self):
         return {
-            'prikey': self.prikey.json(),
-            'pubkey': self.pubkey.json(),
-            'script': self.script.json(),
+            'prikey': self.prikey.json_pack(),
+            'pubkey': self.pubkey.json_pack(),
+            'script': self.script.json_pack(),
             'addr': self.addr,
         }
 
     def livecell(self):
         return ckb.rpc.get_cells_iter({
-            'script': self.script.json(),
+            'script': self.script.json_pack(),
             'script_type': 'lock',
             'filter': {
                 'script_len_range': ['0x0', '0x1']
@@ -44,7 +44,7 @@ class Scw:
 
     def capacity(self):
         return int(ckb.rpc.get_cells_capacity({
-            'script': self.script.json(),
+            'script': self.script.json_pack(),
             'script_type': 'lock',
             'filter': {
                 'script_len_range': ['0x0', '0x1']
@@ -94,7 +94,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return ckb.rpc.send_transaction(tx.json_pack(), 'well_known_scripts_only')
 
     def heritage(self, script: ckb.core.Script):
         assert self.capacity() > 0
@@ -131,7 +131,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
-        tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        tx_hash = ckb.rpc.send_transaction(tx.json_pack(), 'well_known_scripts_only')
         return tx_hash
 
     def converge(self):
