@@ -96,7 +96,7 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
         return ckb.rpc.send_transaction(tx.json_pack(), 'well_known_scripts_only')
 
-    def heritage(self, script: ckb.core.Script):
+    def transfer_all(self, script: ckb.core.Script):
         assert self.capacity() > 0
         accept_script = script
         sender_capacity = 0
@@ -133,8 +133,3 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
         tx_hash = ckb.rpc.send_transaction(tx.json_pack(), 'well_known_scripts_only')
         return tx_hash
-
-    def converge(self):
-        livecell = list(itertools.islice(self.livecell(), 256))
-        assert len(livecell) == 256
-        return self.heritage(self.script)
