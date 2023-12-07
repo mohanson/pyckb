@@ -6,7 +6,7 @@ import ckb.rpc
 def test_get_cells():
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
-    args = ckb.core.hash(pubkey.pack())[:20].hex()
+    args = ckb.core.hash(pubkey.molecule_pack())[:20].hex()
     script = ckb.core.Script(
         ckb.config.current.scripts.secp256k1_blake160.code_hash,
         ckb.config.current.scripts.secp256k1_blake160.hash_type,
@@ -19,7 +19,7 @@ def test_get_cells():
 def test_get_cells_capacity():
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
-    args = ckb.core.hash(pubkey.pack())[:20].hex()
+    args = ckb.core.hash(pubkey.molecule_pack())[:20].hex()
     script = ckb.core.Script(
         ckb.config.current.scripts.secp256k1_blake160.code_hash,
         ckb.config.current.scripts.secp256k1_blake160.hash_type,

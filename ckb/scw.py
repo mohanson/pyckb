@@ -12,7 +12,7 @@ class Scw:
         self.script = ckb.core.Script(
             ckb.config.current.scripts.secp256k1_blake160.code_hash,
             ckb.config.current.scripts.secp256k1_blake160.hash_type,
-            ckb.core.hash(self.pubkey.pack())[:20]
+            ckb.core.hash(self.pubkey.molecule_pack())[:20]
         )
         self.addr = ckb.core.address_encode(self.script)
 
@@ -78,10 +78,10 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).pack())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule_pack())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.pack()) - 4
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule_pack()) - 4
             if change_capacity >= 61 * 100000000:
                 break
         assert change_capacity >= 61 * 100000000
@@ -93,7 +93,7 @@ class Scw:
             sign_data.extend(witness)
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
+        tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def heritage(self, script: ckb.core.Script):
@@ -118,10 +118,10 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).pack())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule_pack())
             else:
                 tx.witnesses.append(bytearray())
-        accept_capacity = sender_capacity - len(tx.pack()) - 4
+        accept_capacity = sender_capacity - len(tx.molecule_pack()) - 4
         tx.raw.outputs[0].capacity = accept_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -130,7 +130,7 @@ class Scw:
             sign_data.extend(witness)
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
+        tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
         tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
         return tx_hash
 

@@ -6,7 +6,7 @@ import json
 
 sender_prikey = ckb.core.PriKey(1)
 sender_pubkey = sender_prikey.pubkey()
-sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
+sender_args = ckb.core.hash(sender_pubkey.molecule_pack())[:20]
 sender_script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.code_hash,
     ckb.config.current.scripts.secp256k1_blake160.hash_type,
@@ -16,7 +16,7 @@ sender_capacity = 0
 
 accept_prikey = ckb.core.PriKey(2)
 accept_pubkey = accept_prikey.pubkey()
-accept_args = ckb.core.hash(accept_pubkey.pack())[:20]
+accept_args = ckb.core.hash(accept_pubkey.molecule_pack())[:20]
 accept_script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.code_hash,
     ckb.config.current.scripts.secp256k1_blake160.hash_type,
@@ -59,10 +59,10 @@ for cell in search:
             bytearray([0 for _ in range(65)]),
             None,
             None,
-        ).pack())
+        ).molecule_pack())
     else:
         tx.witnesses.append(bytearray())
-    change_capacity = sender_capacity - accept_capacity - len(tx.pack()) - 4
+    change_capacity = sender_capacity - accept_capacity - len(tx.molecule_pack()) - 4
     if change_capacity > 61 * 100000000:
         break
 
@@ -76,7 +76,7 @@ for witness in tx.witnesses:
 sign_data_hash = ckb.core.hash(sign_data)
 sign = sender_prikey.sign(sign_data_hash)
 
-tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
+tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
 
 tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 print(tx_hash)

@@ -2,10 +2,10 @@ import ckb.config
 import ckb.core
 
 prikey = ckb.core.PriKey(1)
-print(f'prikey = {prikey.pack().hex()}')
+print(f'prikey = {prikey.molecule_pack().hex()}')
 pubkey = prikey.pubkey()
-print(f'pubkey = {pubkey.pack().hex()}')
-args = ckb.core.hash(pubkey.pack())[:20]
+print(f'pubkey = {pubkey.molecule_pack().hex()}')
+args = ckb.core.hash(pubkey.molecule_pack())[:20]
 print(f'  args = {args.hex()}')
 script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.code_hash,

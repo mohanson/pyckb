@@ -6,7 +6,7 @@ class Byte:
         assert 0 <= data and data <= 0xff
         self.data = data
 
-    def pack(self):
+    def molecule_pack(self):
         return bytearray([self.data])
 
 
@@ -16,10 +16,10 @@ class Byte32:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         return data
 
-    def pack(self):
+    def molecule_pack(self):
         return self.data
 
 
@@ -28,10 +28,10 @@ class Bytenn:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         return data[4:]
 
-    def pack(self):
+    def molecule_pack(self):
         r = bytearray()
         r.extend(len(self.data).to_bytes(4, 'little'))
         r.extend(self.data)
@@ -43,7 +43,7 @@ class Dynvec:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         assert len(data) >= 4
         assert len(data) == int.from_bytes(data[0:4], 'little')
         nums = int.from_bytes(data[4:8], 'little') // 4 - 1
@@ -56,8 +56,8 @@ class Dynvec:
             body.append(data[head[i]:head[i+1]])
         return body
 
-    def pack(self):
-        line = [e.pack() for e in self.data]
+    def molecule_pack(self):
+        line = [e.molecule_pack() for e in self.data]
         head = bytearray()
         body = bytearray()
         head_size = 4 + 4 * len(line)
@@ -76,7 +76,7 @@ class Fixvec:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         assert len(data) >= 4
         icnt = int.from_bytes(data[0:4], 'little')
         body = []
@@ -86,11 +86,11 @@ class Fixvec:
                 body.append(data[4+i*size:4+i*size+size])
         return body
 
-    def pack(self):
+    def molecule_pack(self):
         r = bytearray()
         r.extend(len(self.data).to_bytes(4, 'little'))
         for e in self.data:
-            r.extend(e.pack())
+            r.extend(e.molecule_pack())
         return r
 
 
@@ -98,18 +98,18 @@ class Option:
     def __init__(self, data):
         self.data = data
 
-    def pack(self):
-        return self.data.pack() if self.data else bytearray()
+    def molecule_pack(self):
+        return self.data.molecule_pack() if self.data else bytearray()
 
 
 class Struct:
     def __init__(self, data):
         self.data = data
 
-    def pack(self):
+    def molecule_pack(self):
         r = bytearray()
         for e in self.data:
-            r.extend(e.pack())
+            r.extend(e.molecule_pack())
         return r
 
 
@@ -119,10 +119,10 @@ class U32:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         return int.from_bytes(data, 'little')
 
-    def pack(self):
+    def molecule_pack(self):
         return self.data.to_bytes(4, 'little')
 
 
@@ -132,8 +132,8 @@ class U64:
         self.data = data
 
     @staticmethod
-    def read(data: bytearray):
+    def molecule_read(data: bytearray):
         return int.from_bytes(data, 'little')
 
-    def pack(self):
+    def molecule_pack(self):
         return self.data.to_bytes(8, 'little')

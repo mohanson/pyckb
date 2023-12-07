@@ -6,7 +6,7 @@ import json
 
 sender_prikey = ckb.core.PriKey(1)
 sender_pubkey = sender_prikey.pubkey()
-sender_args = ckb.core.hash(sender_pubkey.pack())[:20]
+sender_args = ckb.core.hash(sender_pubkey.molecule_pack())[:20]
 sender_script = ckb.core.Script(
     ckb.config.current.scripts.secp256k1_blake160.code_hash,
     ckb.config.current.scripts.secp256k1_blake160.hash_type,
@@ -45,11 +45,11 @@ for cell in search:
             bytearray([0 for _ in range(65)]),
             None,
             None,
-        ).pack())
+        ).molecule_pack())
     else:
         tx.witnesses.append(bytearray())
 
-accept_capacity = sender_capacity - len(tx.pack()) - 4
+accept_capacity = sender_capacity - len(tx.molecule_pack()) - 4
 tx.raw.outputs[0].capacity = accept_capacity
 
 sign_data = bytearray()
@@ -60,7 +60,7 @@ for witness in tx.witnesses:
 sign_data_hash = ckb.core.hash(sign_data)
 sign = sender_prikey.sign(sign_data_hash)
 
-tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).pack()
+tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule_pack()
 
 print(json.dumps(tx.json(), indent=4))
 tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
