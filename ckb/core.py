@@ -35,9 +35,7 @@ class PriKey:
         return bytearray(self.n.to_bytes(32, byteorder='big'))
 
     def json_pack(self):
-        return {
-            'n': f'0x{self.n:064x}'
-        }
+        return f'0x{self.n:064x}'
 
     def pubkey(self):
         pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
@@ -207,7 +205,7 @@ class OutPoint:
         ]).molecule_pack()
 
     @staticmethod
-    def json_pack_read(data: dict):
+    def json_read(data: dict):
         return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
 
     def json_pack(self):
