@@ -8,8 +8,8 @@ def test_get_cells():
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.molecule())[:20].hex()
     script = ckb.core.Script(
-        ckb.config.current.scripts.secp256k1_blake160.code_hash,
-        ckb.config.current.scripts.secp256k1_blake160.hash_type,
+        ckb.config.current.script.secp256k1_blake160.code_hash,
+        ckb.config.current.script.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
     search = {'script': script.json(), 'script_type': 'lock'}
@@ -21,8 +21,8 @@ def test_get_cells_capacity():
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.molecule())[:20].hex()
     script = ckb.core.Script(
-        ckb.config.current.scripts.secp256k1_blake160.code_hash,
-        ckb.config.current.scripts.secp256k1_blake160.hash_type,
+        ckb.config.current.script.secp256k1_blake160.code_hash,
+        ckb.config.current.script.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
     search = {'script': script.json(), 'script_type': 'lock'}

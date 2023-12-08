@@ -10,8 +10,8 @@ class Scw:
         self.prikey = ckb.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
         self.script = ckb.core.Script(
-            ckb.config.current.scripts.secp256k1_blake160.code_hash,
-            ckb.config.current.scripts.secp256k1_blake160.hash_type,
+            ckb.config.current.script.secp256k1_blake160.code_hash,
+            ckb.config.current.script.secp256k1_blake160.hash_type,
             ckb.core.hash(self.pubkey.molecule())[:20]
         )
         self.addr = ckb.core.address_encode(self.script)
@@ -63,10 +63,10 @@ class Scw:
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep(
             ckb.core.OutPoint(
-                ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index
+                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
+                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
             ),
-            ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type,
+            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
         ))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
@@ -105,10 +105,10 @@ class Scw:
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep(
             ckb.core.OutPoint(
-                ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.scripts.secp256k1_blake160.cell_dep.out_point.index
+                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
+                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
             ),
-            ckb.config.current.scripts.secp256k1_blake160.cell_dep.dep_type,
+            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
         ))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
@@ -134,3 +134,55 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
         return tx_hash
+
+
+class Dao:
+    def __init__(self, prikey: int):
+        self.scw = Scw(prikey)
+
+    def __repr__(self):
+        return json.dumps(self.json())
+
+    def __eq__(self, other):
+        a = self.scw == other.scw
+        return a
+
+    def json(self):
+        return {
+            'scw': self.scw.json(),
+        }
+
+    def livecell(self):
+        return ckb.rpc.get_cells_iter({
+            'script': self.scw.script.json(),
+            'script_type': 'lock',
+            'filter': {
+                'script': ckb.core.Script(
+                    ckb.config.current.script.dao.code_hash,
+                    ckb.config.current.script.dao.hash_type,
+                    bytearray(),
+                ).json(),
+            },
+        })
+
+    def capacity(self):
+        r = 0
+        for e in self.livecell():
+            r += int(e['output']['capacity'], 16)
+        return r
+
+    def capacity_deposit(self):
+        r = 0
+        for e in self.livecell():
+            output_data = int.from_bytes(bytearray.fromhex(e['output_data'][2:]), 'little')
+            if output_data == 0:
+                r += int(e['output']['capacity'], 16)
+        return r
+
+    def capacity_prepare(self):
+        r = 0
+        for e in self.livecell():
+            output_data = int.from_bytes(bytearray.fromhex(e['output_data'][2:]), 'little')
+            if output_data != 0:
+                r += int(e['output']['capacity'], 16)
+        return r
