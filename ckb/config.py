@@ -112,8 +112,8 @@ def upgrade(url: str):
     })
     t = r.json()['result']['transactions']
     develop.url = url
-    develop.scripts.dao.cell_dep.out_point.tx_hash = bytearray.fromhex(t[0]['hash'][2:])
-    develop.scripts.secp256k1_blake160.cell_dep.out_point.tx_hash = bytearray.fromhex(t[1]['hash'][2:])
+    develop.script.dao.cell_dep.out_point.tx_hash = bytearray.fromhex(t[0]['hash'][2:])
+    develop.script.secp256k1_blake160.cell_dep.out_point.tx_hash = bytearray.fromhex(t[1]['hash'][2:])
 
 
 current = testnet

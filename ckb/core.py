@@ -29,7 +29,7 @@ class PriKey:
     @staticmethod
     def molecule_read(data: bytearray):
         assert len(data) == 32
-        return Prikey(int.from_bytes(data, byteorder='big'))
+        return PriKey(int.from_bytes(data, byteorder='big'))
 
     def molecule(self):
         return bytearray(self.n.to_bytes(32, byteorder='big'))
@@ -111,7 +111,7 @@ class PubKey:
 class Script:
     def __init__(self, code_hash: bytearray, hash_type: int, args: bytearray):
         assert len(code_hash) == 32
-        assert hash_type < 3  # 0 => data, 1 => type, 2 => data1
+        assert hash_type in [0, 1, 2]  # 0 => data, 1 => type, 2 => data1
         self.code_hash = code_hash
         self.hash_type = hash_type
         self.args = args
@@ -146,10 +146,21 @@ class Script:
             'hash_type': {
                 0: 'data',
                 1: 'type',
-                2: 'data1'
+                2: 'data1',
             }[self.hash_type],
             'args': f'0x{self.args.hex()}',
         }
+
+    @staticmethod
+    def json_read(data: dict):
+        code_hash = bytearray.fromhex(data['code_hash'][2:])
+        hash_type = {
+            'data': 0,
+            'type': 1,
+            'data1': 2,
+        }[data['hash_type']]
+        args = bytearray.fromhex(data['args'][2:])
+        return Script(code_hash, hash_type, args)
 
     def hash(self):
         return hash(self.molecule())
@@ -290,6 +301,13 @@ class CellOutput:
             'lock': self.lock.json(),
             'type': self.type.json() if self.type else None
         }
+
+    @staticmethod
+    def json_read(data: dict):
+        capacity = int(data['capacity'], 16)
+        lock = Script.json_read(data['lock'])
+        type = Script.json_read(data['type']) if data['type'] else None
+        return CellOutput(capacity, lock, type)
 
 
 class CellDep:
