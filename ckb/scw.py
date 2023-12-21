@@ -89,8 +89,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
-        return tx_hash
+        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def transfer_all(self, script: ckb.core.Script):
         assert self.capacity() > 0
@@ -121,8 +120,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        tx_hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
-        return tx_hash
+        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def script_deploy(self, script: ckb.core.Script, data: bytearray):
         sender_capacity = 0
