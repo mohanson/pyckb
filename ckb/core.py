@@ -9,6 +9,10 @@ import typing
 
 # 1 ckb = 10 ** 8 shannons
 shannon = 10 ** 8
+# https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md
+# The Type ID code cell uses a special type script hash, which is just the ascii codes in hex of the text TYPE_ID.
+type_id_code_hash = bytearray.fromhex('00000000000000000000000000000000000000000000000000545950455f4944')
+type_id_hash_type = 1
 
 
 def hash(data: bytearray):
@@ -140,17 +144,6 @@ class Script:
             ckb.molecule.Bytenn(self.args)
         ]).molecule()
 
-    def json(self):
-        return {
-            'code_hash': f'0x{self.code_hash.hex()}',
-            'hash_type': {
-                0: 'data',
-                1: 'type',
-                2: 'data1',
-            }[self.hash_type],
-            'args': f'0x{self.args.hex()}',
-        }
-
     @staticmethod
     def json_read(data: dict):
         code_hash = bytearray.fromhex(data['code_hash'][2:])
@@ -161,6 +154,17 @@ class Script:
         }[data['hash_type']]
         args = bytearray.fromhex(data['args'][2:])
         return Script(code_hash, hash_type, args)
+
+    def json(self):
+        return {
+            'code_hash': f'0x{self.code_hash.hex()}',
+            'hash_type': {
+                0: 'data',
+                1: 'type',
+                2: 'data1',
+            }[self.hash_type],
+            'args': f'0x{self.args.hex()}',
+        }
 
     def hash(self):
         return hash(self.molecule())
@@ -295,19 +299,19 @@ class CellOutput:
             ckb.molecule.Option(self.type),
         ]).molecule()
 
-    def json(self):
-        return {
-            'capacity': hex(self.capacity),
-            'lock': self.lock.json(),
-            'type': self.type.json() if self.type else None
-        }
-
     @staticmethod
     def json_read(data: dict):
         capacity = int(data['capacity'], 16)
         lock = Script.json_read(data['lock'])
         type = Script.json_read(data['type']) if data['type'] else None
         return CellOutput(capacity, lock, type)
+
+    def json(self):
+        return {
+            'capacity': hex(self.capacity),
+            'lock': self.lock.json(),
+            'type': self.type.json() if self.type else None
+        }
 
 
 class CellDep:
@@ -337,6 +341,15 @@ class CellDep:
             ckb.molecule.Byte(self.dep_type),
         ]).molecule()
 
+    @staticmethod
+    def json_read(data: dict):
+        out_point = OutPoint.json_read(data['out_point'])
+        dep_type = {
+            'code': 0,
+            'dep_group': 1
+        }[data['dep_type']]
+        return CellDep(out_point, dep_type)
+
     def json(self):
         return {
             'out_point': self.out_point.json(),
@@ -345,6 +358,10 @@ class CellDep:
                 1: 'dep_group',
             }[self.dep_type]
         }
+
+    @staticmethod
+    def conf_read(data: dict):
+        return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
 
 
 class TransactionRaw:

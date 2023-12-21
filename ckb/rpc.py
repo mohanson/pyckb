@@ -3,6 +3,7 @@ import ckb.core
 import itertools
 import random
 import requests
+import time
 
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 
@@ -49,6 +50,28 @@ def get_cells_capacity(search_key):
         'jsonrpc': '2.0',
         'method': 'get_cells_capacity',
         'params': [search_key]
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
+
+def get_current_epoch():
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_current_epoch',
+        'params': []
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
+
+def get_header(block_hash, verbosity):
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_header',
+        'params': [block_hash, verbosity]
     }).json()
     if 'error' in r:
         raise Exception(r['error'])
@@ -101,3 +124,11 @@ def send_transaction(transaction, outputs_validator):
     if 'error' in r:
         raise Exception(r['error'])
     return r['result']
+
+
+def wait(hash):
+    for _ in itertools.repeat(0):
+        time.sleep(1)
+        r = get_transaction(hash, None, None)
+        if r['tx_status']['status'] == 'committed':
+            break
