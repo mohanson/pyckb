@@ -55,6 +55,18 @@ def get_cells_capacity(search_key):
     return r['result']
 
 
+def get_header(block_hash, verbosity):
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_header',
+        'params': [block_hash, verbosity]
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
+
+
 def get_indexer_tip():
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
