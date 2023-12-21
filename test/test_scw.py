@@ -31,3 +31,11 @@ def test_scw_script_deploy_type_id():
     out_point = ckb.core.OutPoint(bytearray.fromhex(hash[2:]), 0)
     hash = user.script_update_type_id(user.script, bytearray([0, 1, 2, 3, 4, 5]), out_point)
     ckb.rpc.wait(hash)
+
+
+def test_scw_dao():
+    user = ckb.scw.Scw(1)
+    hash = user.dao_deposit(200 * ckb.core.shannon)
+    ckb.rpc.wait(hash)
+    hash = user.dao_prepare(ckb.core.OutPoint(bytearray.fromhex(hash[2:]), 0))
+    ckb.rpc.wait(hash)

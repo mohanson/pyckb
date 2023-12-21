@@ -1,13 +1,16 @@
 import ckb
 
-ckb.config.current = ckb.config.develop
+# ckb.config.current = ckb.config.develop
 
-ada = ckb.scw.Scw(1)
-bob = ckb.scw.Scw(2)
+user = ckb.scw.Scw(1)
 
-# bob.transfer_all(ada.script)
-print(bob.capacity())
+hash = user.dao_extract(ckb.core.OutPoint(
+    bytearray.fromhex('6bb2911bf7076c91cbd817089be02ad49bcbcd4dc0d58df4883f6883f4a0351b'),
+    0
+))
+print(hash)
 
+# print(bob.capacity())
 # hash = ada.transfer(bob.script, 100 * ckb.core.shannon)
 # print(hash)
 
