@@ -128,16 +128,13 @@ class Scw:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
-            if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
-            else:
-                tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
