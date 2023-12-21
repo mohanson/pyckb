@@ -55,6 +55,16 @@ def get_cells_capacity(search_key):
         raise Exception(r['error'])
     return r['result']
 
+def get_current_epoch():
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_current_epoch',
+        'params': []
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
 
 def get_header(block_hash, verbosity):
     r = requests.post(ckb.config.current.url, json={

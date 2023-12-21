@@ -322,10 +322,6 @@ class Scw:
         assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
-        idcell = {
-            'output': origin.json(),
-            'out_point': out_point.json()
-        }
         deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
         deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
         deposit_block_header = ckb.rpc.get_block_by_number(deposit_block_number)['header']
@@ -334,7 +330,8 @@ class Scw:
         prepare_block_hash = bytearray.fromhex(result['tx_status']['block_hash'][2:])
         prepare_block_header = ckb.rpc.get_header('0x' + prepare_block_hash.hex(), None)
         prepare_dao_ar = int.from_bytes(bytearray.fromhex(prepare_block_header['dao'][2:])[8:16], 'little')
-        sender_capacity = 0
+        extrace_since = int(deposit_block_header['epoch'], 16) + 180 + 0x2000000000000000
+        sender_capacity = origin.capacity
         accept_capacity = (origin.capacity - 102) * prepare_dao_ar // deposit_dao_ar + 102
         accept_script = self.script
         change_capacity = 0
@@ -344,19 +341,16 @@ class Scw:
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(deposit_block_hash)
         tx.raw.header_deps.append(prepare_block_hash)
+        tx.raw.inputs.append(ckb.core.CellInput(extrace_since, out_point))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray())
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), bytearray([0] * 8), None).molecule())
-        for cell in itertools.islice(itertools.chain([idcell], self.livecell()), 256):
+        for cell in itertools.islice(self.livecell(), 255):
             cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
-            if len(tx.witnesses) == 0:
-                cell_input = ckb.core.CellInput(
-                    int(deposit_block_header['epoch'], 16) + 180 + 0x2000000000000000, cell_out_point)
-            else:
-                cell_input = ckb.core.CellInput(0, cell_out_point)
+            cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
