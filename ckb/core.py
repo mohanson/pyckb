@@ -355,6 +355,10 @@ class CellDep:
             }[self.dep_type]
         }
 
+    @staticmethod
+    def conf_read(data: dict):
+        return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
+
 
 class TransactionRaw:
     def __init__(

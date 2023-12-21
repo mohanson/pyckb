@@ -61,13 +61,7 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray())
@@ -104,13 +98,7 @@ class Scw:
         accept_capacity = 0
         accept_script = script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
         for cell in itertools.islice(self.livecell(), 256):
@@ -143,13 +131,7 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
@@ -191,13 +173,7 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
@@ -244,13 +220,7 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
@@ -295,20 +265,8 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.dao.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.dao.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.dao.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray([0] * 8))
@@ -353,20 +311,8 @@ class Scw:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.secp256k1_blake160.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.secp256k1_blake160.cell_dep.dep_type,
-        ))
-        tx.raw.cell_deps.append(ckb.core.CellDep(
-            ckb.core.OutPoint(
-                ckb.config.current.script.dao.cell_dep.out_point.tx_hash,
-                ckb.config.current.script.dao.cell_dep.out_point.index
-            ),
-            ckb.config.current.script.dao.cell_dep.dep_type,
-        ))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(bytearray.fromhex(result['tx_status']['block_hash'][2:]))
         tx.raw.inputs.append(ckb.core.CellInput(0, out_point))
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
