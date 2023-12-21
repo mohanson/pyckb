@@ -73,7 +73,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -107,7 +107,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
         accept_capacity = sender_capacity - len(tx.molecule()) - 4
@@ -141,7 +141,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -183,7 +183,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -230,7 +230,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -276,7 +276,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -327,7 +327,7 @@ class Scw:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             if len(tx.witnesses) == 0:
-                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
@@ -345,9 +345,66 @@ class Scw:
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
-    def dao_extract(self):
+    def dao_extract(self, out_point: ckb.core.OutPoint):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
-        pass
+        result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex(), None, None)
+        origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+        assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
+        assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
+        assert origin.type.args == bytearray()
+        idcell = {
+            'output': origin.json(),
+            'out_point': out_point.json()
+        }
+        deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
+        deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
+        deposit_block_header = ckb.rpc.get_block_by_number(deposit_block_number)['header']
+        deposit_block_hash = bytearray.fromhex(deposit_block_header['hash'][2:])
+        deposit_dao_ar = int.from_bytes(bytearray.fromhex(deposit_block_header['dao'][2:])[8:16], 'little')
+        prepare_block_hash = bytearray.fromhex(result['tx_status']['block_hash'][2:])
+        prepare_block_header = ckb.rpc.get_header('0x' + prepare_block_hash.hex(), None)
+        prepare_dao_ar = int.from_bytes(bytearray.fromhex(prepare_block_header['dao'][2:])[8:16], 'little')
+        sender_capacity = 0
+        accept_capacity = (origin.capacity - 102) * prepare_dao_ar // deposit_dao_ar + 102
+        accept_script = self.script
+        change_capacity = 0
+        change_script = self.script
+        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
+        tx.raw.header_deps.append(deposit_block_hash)
+        tx.raw.header_deps.append(prepare_block_hash)
+        tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
+        tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
+        tx.raw.outputs_data.append(bytearray())
+        tx.raw.outputs_data.append(bytearray())
+        for cell in itertools.islice(itertools.chain([idcell], self.livecell()), 256):
+            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_capacity = int(cell['output']['capacity'], 16)
+            if len(tx.witnesses) == 0:
+                cell_input = ckb.core.CellInput(int(deposit_block_header['epoch'], 16) + 180 + 0x2000000000000000, cell_out_point)
+            else:
+                cell_input = ckb.core.CellInput(0, cell_out_point)
+            sender_capacity += cell_capacity
+            tx.raw.inputs.append(cell_input)
+            if len(tx.witnesses) == 0:
+                tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), bytearray([0] * 8), None).molecule())
+            else:
+                tx.witnesses.append(bytearray())
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
+            if change_capacity >= 61 * ckb.core.shannon:
+                break
+        assert change_capacity >= 61 * ckb.core.shannon
+        tx.raw.outputs[1].capacity = change_capacity
+        sign_data = bytearray()
+        sign_data.extend(tx.raw.hash())
+        for witness in tx.witnesses:
+            sign_data.extend(len(witness).to_bytes(8, 'little'))
+            sign_data.extend(witness)
+        sign_data = ckb.core.hash(sign_data)
+        sign = self.prikey.sign(sign_data)
+        tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray([0] * 8), None).molecule()
+        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def dao_livecell(self):
         return ckb.rpc.get_cells_iter({
