@@ -3,6 +3,7 @@ import ckb.core
 import itertools
 import random
 import requests
+import time
 
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 
@@ -113,3 +114,11 @@ def send_transaction(transaction, outputs_validator):
     if 'error' in r:
         raise Exception(r['error'])
     return r['result']
+
+
+def wait(hash):
+    for _ in itertools.repeat(0):
+        time.sleep(1)
+        r = get_transaction(hash, None, None)
+        if r['tx_status']['status'] == 'committed':
+            break

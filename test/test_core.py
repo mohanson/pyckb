@@ -1,5 +1,4 @@
-import ckb.config
-import ckb.core
+import ckb
 
 
 def test_pubkey():

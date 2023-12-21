@@ -1,6 +1,4 @@
-import ckb.config
-import ckb.core
-import ckb.rpc
+import ckb
 
 
 def test_get_cells():
