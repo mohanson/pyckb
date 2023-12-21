@@ -76,7 +76,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
@@ -110,7 +110,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-        accept_capacity = sender_capacity - len(tx.molecule() + 4)
+        accept_capacity = sender_capacity - len(tx.molecule()) - 4
         tx.raw.outputs[0].capacity = accept_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -144,7 +144,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
@@ -186,7 +186,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
@@ -233,7 +233,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
@@ -279,7 +279,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
@@ -330,7 +330,7 @@ class Scw:
                 tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
             else:
                 tx.witnesses.append(bytearray())
-            change_capacity = sender_capacity - accept_capacity - len(tx.molecule() + 4)
+            change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
             if change_capacity >= 61 * ckb.core.shannon:
                 break
         assert change_capacity >= 61 * ckb.core.shannon
