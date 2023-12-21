@@ -2,7 +2,15 @@ import ckb
 
 ckb.config.current = ckb.config.develop
 
-# user = ckb.scw.Scw(1)
+ada = ckb.scw.Scw(1)
+bob = ckb.scw.Scw(2)
+
+# bob.transfer_all(ada.script)
+print(bob.capacity())
+
+# hash = ada.transfer(bob.script, 100 * ckb.core.shannon)
+# print(hash)
+
 # for e in user.dao_livecell():
 #     print(e, int(e['output']['capacity'], 16) / ckb.core.shannon)
 
