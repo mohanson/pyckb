@@ -302,7 +302,11 @@ class Scw:
         assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
-        sender_capacity = origin.capacity
+        idcell = {
+            'output': origin.json(),
+            'out_point': out_point.json()
+        }
+        sender_capacity = 0
         accept_capacity = origin.capacity
         accept_script = origin.lock
         accept_typeid = origin.type
@@ -312,13 +316,11 @@ class Scw:
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(bytearray.fromhex(result['tx_status']['block_hash'][2:]))
-        tx.raw.inputs.append(ckb.core.CellInput(0, out_point))
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0 for _ in range(65)]), None, None).molecule())
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(number.to_bytes(8, 'little'))
         tx.raw.outputs_data.append(bytearray())
-        for cell in itertools.islice(self.livecell(), 256):
+        for cell in itertools.islice(itertools.chain([idcell], self.livecell()), 256):
             cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
