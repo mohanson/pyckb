@@ -68,6 +68,8 @@ class PriKey:
                 v |= 2
             # Here we do not adjust the sign of s.
             # Doc: https://ethereum.stackexchange.com/questions/55245/why-is-s-in-transaction-signature-limited-to-n-21
+            # For BTC, v is in the prefix.
+            # For CKB, v is in the suffix.
             return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
 
 
