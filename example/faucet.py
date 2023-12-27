@@ -39,4 +39,4 @@ for _ in itertools.repeat(0):
 
 ckb.rpc.wait(hash)
 hash = kana.transfer_all(ckb.core.address_decode(args.addr))
-ckb.rpc.wait(hash)
+ckb.rpc.wait(f'0x{hash.hex()}')

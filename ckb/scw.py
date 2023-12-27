@@ -108,7 +108,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def transfer_all(self, script: ckb.core.Script):
         assert self.capacity() > 0
@@ -137,7 +138,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def script_deploy(self, script: ckb.core.Script, data: bytearray):
         sender_capacity = 0
@@ -172,7 +174,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def script_deploy_type_id(self, script: ckb.core.Script, data: bytearray):
         sender_capacity = 0
@@ -210,7 +213,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'passthrough')
+        hash = ckb.rpc.send_transaction(tx.json(), 'passthrough')
+        return bytearray.fromhex(hash[2:])
 
     def script_update_type_id(self, script: ckb.core.Script, data: bytearray, out_point: ckb.core.OutPoint):
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex(), None, None)
@@ -251,7 +255,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'passthrough')
+        hash = ckb.rpc.send_transaction(tx.json(), 'passthrough')
+        return bytearray.fromhex(hash[2:])
 
     def dao_deposit(self, capacity: int):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
@@ -295,7 +300,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def dao_prepare(self, out_point: ckb.core.OutPoint):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
@@ -341,7 +347,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def dao_extract(self, out_point: ckb.core.OutPoint):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
@@ -395,7 +402,8 @@ class Scw:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray([0] * 8), None).molecule()
         ScwTransactionAnalyzer(tx).analyze()
-        return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        hash = ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
+        return bytearray.fromhex(hash[2:])
 
     def dao_livecell(self):
         return ckb.rpc.get_cells_iter({
