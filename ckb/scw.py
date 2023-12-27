@@ -5,6 +5,27 @@ import itertools
 import json
 
 
+class ScwTransactionAnalyzer:
+    def __init__(self, tx: ckb.core.Transaction):
+        self.tx = tx
+
+    def analyze_mining_fee(self):
+        # Make sure the transaction fee is less than 1 CKB. This is a rough check, but works well in most cases.
+        sender_capacity = 0
+        output_capacity = 0
+        for e in self.tx.raw.inputs:
+            out_point = e.previous_output
+            result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex(), None, None)
+            origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+            sender_capacity += origin.capacity
+        for e in self.tx.raw.outputs:
+            output_capacity += e.capacity
+        assert sender_capacity - output_capacity <= 1 * ckb.core.shannon
+
+    def analyze(self):
+        self.analyze_mining_fee()
+
+
 class Scw:
     def __init__(self, prikey: int):
         self.prikey = ckb.core.PriKey(prikey)
@@ -86,6 +107,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def transfer_all(self, script: ckb.core.Script):
@@ -114,6 +136,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def script_deploy(self, script: ckb.core.Script, data: bytearray):
@@ -148,6 +171,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def script_deploy_type_id(self, script: ckb.core.Script, data: bytearray):
@@ -185,6 +209,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'passthrough')
 
     def script_update_type_id(self, script: ckb.core.Script, data: bytearray, out_point: ckb.core.OutPoint):
@@ -225,6 +250,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'passthrough')
 
     def dao_deposit(self, capacity: int):
@@ -268,6 +294,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def dao_prepare(self, out_point: ckb.core.OutPoint):
@@ -313,6 +340,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def dao_extract(self, out_point: ckb.core.OutPoint):
@@ -366,6 +394,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray([0] * 8), None).molecule()
+        ScwTransactionAnalyzer(tx).analyze()
         return ckb.rpc.send_transaction(tx.json(), 'well_known_scripts_only')
 
     def dao_livecell(self):
