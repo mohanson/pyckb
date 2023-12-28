@@ -15,14 +15,14 @@ class ObjectDict(dict):
 
 develop = ObjectDict({
     'hrp': 'ckt',
-    'url': 'http://18.162.168.78:8114',
+    'url': 'http://127.0.0.1:8114',
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
             'hash_type': 1,
             'cell_dep': ObjectDict({
                 'out_point': ObjectDict({
-                    'tx_hash': bytearray.fromhex('44b3212de8c8b1aaabf241c3526bf44264e8acbda0cb9ac353d4bd07fc34021e'),
+                    'tx_hash': bytearray.fromhex('0000000000000000000000000000000000000000000000000000000000000000'),
                     'index': 2,
                 }),
                 'dep_type': 0,
@@ -33,7 +33,7 @@ develop = ObjectDict({
             'hash_type': 1,
             'cell_dep': ObjectDict({
                 'out_point': ObjectDict({
-                    'tx_hash': bytearray.fromhex('94dfbac7f4ccb5b1f41b1cc314abae9df3f85108af214c5aaff569c8ada0885e'),
+                    'tx_hash': bytearray.fromhex('0000000000000000000000000000000000000000000000000000000000000000'),
                     'index': 0,
                 }),
                 'dep_type': 1,
