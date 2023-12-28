@@ -66,7 +66,7 @@ def get_current_epoch():
         raise Exception(r['error'])
     return r['result']
 
-def get_header(block_hash, verbosity):
+def get_header(block_hash, verbosity=None):
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
@@ -102,7 +102,7 @@ def get_tip_block_number():
     return r['result']
 
 
-def get_transaction(tx_hash, verbosity, only_committed):
+def get_transaction(tx_hash, verbosity=None, only_committed=None):
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
@@ -114,7 +114,7 @@ def get_transaction(tx_hash, verbosity, only_committed):
     return r['result']
 
 
-def send_transaction(transaction, outputs_validator):
+def send_transaction(transaction, outputs_validator=None):
     r = requests.post(ckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
