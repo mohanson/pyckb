@@ -6,3 +6,9 @@ Features:
 
 - No third-party dependencies. All code is visible.
 - Incredibly simple.
+
+## Installation
+
+```sh
+$ pip install pyckb
+```
