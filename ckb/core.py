@@ -464,6 +464,20 @@ class Transaction:
         return r
 
 
+def epoch_encode(e: int, i: int, l: int) -> int:
+    assert 0 <= e and e <= 0xffffff
+    assert 0 <= i and i <= 0xffff
+    assert 0 <= l and l <= 0xffff
+    return l << 0x28 | i << 0x18 | e
+
+
+def epoch_decode(v: int):
+    e = v & 0xffffff
+    i = v >> 0x18 & 0xffff
+    l = v >> 0x28 & 0xffff
+    return e, i, l
+
+
 class WitnessArgs:
     def __init__(
         self,

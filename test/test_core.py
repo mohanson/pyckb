@@ -36,3 +36,8 @@ def test_addr():
     assert ckb.core.address_decode(addr) == script
     assert script.hash().hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert ckb.core.Script.molecule_read(script.molecule()) == script
+
+
+def test_epoch():
+    assert ckb.core.epoch_decode(0x3690138000093) == (147, 312, 873)
+    assert ckb.core.epoch_encode(147, 312, 873) == 0x3690138000093

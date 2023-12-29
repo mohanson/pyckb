@@ -22,8 +22,33 @@ class ScwTransactionAnalyzer:
             output_capacity += e.capacity
         assert sender_capacity - output_capacity <= 1 * ckb.core.shannon
 
+    def analyze_since(self):
+        # Transaction since precondition
+        # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0017-tx-valid-since/0017-tx-valid-since.md
+        for e in self.tx.raw.inputs:
+            if e.since == 0:
+                continue
+            if e.since >> 56 == 0x00:
+                pass
+            if e.since >> 56 == 0x20:
+                current_epoch = ckb.core.epoch_decode(int(ckb.rpc.get_tip_header()['epoch'], 16))
+                request_epoch = ckb.core.epoch_decode(e.since & 0xffffffffffffff)
+                if current_epoch[0] == request_epoch[0]:
+                    assert current_epoch[1] >= request_epoch[1]
+                else:
+                    assert current_epoch[0] >= request_epoch[0]
+            if e.since >> 56 == 0x60:
+                pass
+            if e.since >> 56 == 0x80:
+                pass
+            if e.since >> 56 == 0xa0:
+                pass
+            if e.since >> 56 == 0xe0:
+                pass
+
     def analyze(self):
         self.analyze_mining_fee()
+        self.analyze_since()
 
 
 class Scw:
@@ -306,7 +331,7 @@ class Scw:
     def dao_prepare(self, out_point: ckb.core.OutPoint):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-        number = int(ckb.rpc.get_header(result['tx_status']['block_hash'], None)['number'], 16)
+        number = int(ckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
         origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
@@ -363,7 +388,7 @@ class Scw:
         deposit_block_hash = bytearray.fromhex(deposit_block_header['hash'][2:])
         deposit_dao_ar = int.from_bytes(bytearray.fromhex(deposit_block_header['dao'][2:])[8:16], 'little')
         prepare_block_hash = bytearray.fromhex(result['tx_status']['block_hash'][2:])
-        prepare_block_header = ckb.rpc.get_header('0x' + prepare_block_hash.hex(), None)
+        prepare_block_header = ckb.rpc.get_header('0x' + prepare_block_hash.hex())
         prepare_dao_ar = int.from_bytes(bytearray.fromhex(prepare_block_header['dao'][2:])[8:16], 'little')
         extrace_since = int(deposit_block_header['epoch'], 16) + 180 + 0x2000000000000000
         sender_capacity = origin.capacity
