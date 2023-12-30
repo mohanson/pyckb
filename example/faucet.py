@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('addr', type=str, help='ckb address')
 args = parser.parse_args()
 
-kana = ckb.scw.Scw(random.randint(0, ckb.secp256k1.N - 1))
+kana = ckb.wallet.Wallet(random.randint(0, ckb.secp256k1.N - 1))
 resp = requests.post('https://faucet-api.nervos.org/claim_events', json={
     'claim_event': {
         'address_hash': kana.addr,

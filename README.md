@@ -10,5 +10,5 @@ Features:
 ## Installation
 
 ```sh
-$ pip install pyckb
+$ python -m pip install pyckb
 ```

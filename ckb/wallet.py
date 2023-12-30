@@ -6,7 +6,7 @@ import json
 import math
 
 
-class ScwTransactionAnalyzer:
+class WalletTransactionAnalyzer:
     def __init__(self, tx: ckb.core.Transaction):
         self.tx = tx
 
@@ -52,7 +52,7 @@ class ScwTransactionAnalyzer:
         self.analyze_since()
 
 
-class Scw:
+class Wallet:
     def __init__(self, prikey: int):
         self.prikey = ckb.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
@@ -133,7 +133,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -163,7 +163,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -199,7 +199,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -238,7 +238,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -280,7 +280,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json(), 'passthrough')
         return bytearray.fromhex(hash[2:])
 
@@ -325,7 +325,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -372,7 +372,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
@@ -425,7 +425,7 @@ class Scw:
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray([0] * 8), None).molecule()
-        ScwTransactionAnalyzer(tx).analyze()
+        WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
