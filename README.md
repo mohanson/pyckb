@@ -17,6 +17,19 @@ $ python -m pip install pyckb
 
 By default, pyckb is configured on the testnet. To switch networks, see `ckb.config`.
 
+**example/deploy.py**
+
+Deploy a script to the chain.
+
+```sh
+$ python example/deploy.py LICENSE
+
+script.code_hash = 0x1a124d54d4f37713b8f17fc12142ede488906d4290fbb178d7aad214977814ee
+script.hash_type = 2(data1)
+out_point.hash   = 0x418f60d67ff3e9841a3091c55cb4eb50837602582495931c372fff99f3107f38
+out_point.index  = 0
+```
+
 **example/faucet.py**
 
 One faucet to send 300000 CKB to any ckb addresses. The script execution takes 2 blocks, which is about 20 seconds.
