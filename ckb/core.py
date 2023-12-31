@@ -33,10 +33,10 @@ class PriKey:
     @staticmethod
     def molecule_read(data: bytearray):
         assert len(data) == 32
-        return PriKey(int.from_bytes(data, byteorder='big'))
+        return PriKey(int.from_bytes(data))
 
     def molecule(self):
-        return bytearray(self.n.to_bytes(32, byteorder='big'))
+        return bytearray(self.n.to_bytes(32))
 
     @staticmethod
     def json_read(data: str):
@@ -90,7 +90,7 @@ class PubKey:
     def molecule_read(data: bytearray):
         assert len(data) == 33
         o = data[0]
-        x = int.from_bytes(data[1:33], byteorder='big')
+        x = int.from_bytes(data[1:33])
         y_x_y = x * x * x + ckb.secp256k1.A.x * x + ckb.secp256k1.B.x
         y = pow(y_x_y, (ckb.secp256k1.P + 1) // 4, ckb.secp256k1.P)
         if y & 1 != o - 2:
@@ -104,7 +104,7 @@ class PubKey:
             r.append(0x02)
         else:
             r.append(0x03)
-        r.extend(self.x.to_bytes(32, byteorder='big'))
+        r.extend(self.x.to_bytes(32))
         return r
 
     def json(self):
