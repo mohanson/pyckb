@@ -385,7 +385,7 @@ class Wallet:
         assert origin.type.args == bytearray()
         deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
         deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
-        deposit_block_header = ckb.rpc.get_block_by_number(deposit_block_number)['header']
+        deposit_block_header = ckb.rpc.get_header_by_number(hex(deposit_block_number))
         deposit_block_hash = bytearray.fromhex(deposit_block_header['hash'][2:])
         deposit_block_epoch = ckb.core.epoch_decode(int(deposit_block_header['epoch'], 16))
         deposit_block_epoch_float = deposit_block_epoch[0] + deposit_block_epoch[1] / deposit_block_epoch[2]

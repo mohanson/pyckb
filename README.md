@@ -38,6 +38,14 @@ One faucet to send 300000 CKB to any ckb addresses. The script execution takes 2
 $ python example/faucet.py ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40
 ```
 
+**example/redeem.py**
+
+Attempt to withdraw all funds from Dao. When running the test case of pyckb by `pytest -v`, a part of ckb will be locked in Dao. Use this script to recover this part of the funds.
+
+```sh
+$ python example/redeem.py
+```
+
 ## License
 
 MIT

@@ -13,7 +13,7 @@ def get_block_by_number(block_number):
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
         'method': 'get_block_by_number',
-        'params': [hex(block_number)]
+        'params': [block_number]
     }).json()
     if 'error' in r:
         raise Exception(r['error'])
@@ -74,6 +74,18 @@ def get_header(block_hash, verbosity=None):
         'jsonrpc': '2.0',
         'method': 'get_header',
         'params': [block_hash, verbosity]
+    }).json()
+    if 'error' in r:
+        raise Exception(r['error'])
+    return r['result']
+
+
+def get_header_by_number(block_number, verbosity=None):
+    r = requests.post(ckb.config.current.url, json={
+        'id': random.randint(0x00000000, 0xffffffff),
+        'jsonrpc': '2.0',
+        'method': 'get_header_by_number',
+        'params': [block_number, verbosity]
     }).json()
     if 'error' in r:
         raise Exception(r['error'])
@@ -143,6 +155,6 @@ def send_transaction(transaction, outputs_validator=None):
 def wait(hash):
     for _ in itertools.repeat(0):
         time.sleep(1)
-        r = get_transaction(hash, None, None)
+        r = get_transaction(hash)
         if r['tx_status']['status'] == 'committed':
             break
