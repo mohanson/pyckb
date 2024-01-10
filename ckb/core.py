@@ -263,6 +263,12 @@ class CellInput:
             self.previous_output,
         ]).molecule()
 
+    @staticmethod
+    def json_read(data: dict):
+        since = int(data['since'], 16)
+        previous_output = OutPoint.json_read(data['previous_output'])
+        return CellInput(since, previous_output)
+
     def json(self):
         return {
             'since': hex(self.since),
@@ -417,6 +423,16 @@ class TransactionRaw:
             ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.outputs_data])
         ]).molecule()
 
+    @staticmethod
+    def json_read(data: dict):
+        version = int(data['version'], 16)
+        cell_deps = [CellDep.json_read(e) for e in data['cell_deps']]
+        header_deps = [bytearray.fromhex(e[2:]) for e in data['header_deps']]
+        inputs = [CellInput.json_read(e) for e in data['inputs']]
+        outputs = [CellOutput.json_read(e) for e in data['outputs']]
+        outputs_data = [bytearray.fromhex(e[2:]) for e in data['outputs_data']]
+        return TransactionRaw(version, cell_deps, header_deps, inputs, outputs, outputs_data)
+
     def json(self):
         return {
             'version': hex(self.version),
@@ -457,6 +473,12 @@ class Transaction:
             self.raw,
             ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.witnesses])
         ]).molecule()
+
+    @staticmethod
+    def json_read(data: dict):
+        raw = TransactionRaw.json_read(data)
+        witnesses = [bytearray.fromhex(e[2:]) for e in data['witnesses']]
+        return Transaction(raw, witnesses)
 
     def json(self):
         r = self.raw.json()
