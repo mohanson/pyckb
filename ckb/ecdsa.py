@@ -1,9 +1,10 @@
 import ckb.secp256k1
 import itertools
 import random
+import typing
 
 
-def sign(prikey: ckb.secp256k1.Fr, m: ckb.secp256k1.Fr):
+def sign(prikey: ckb.secp256k1.Fr, m: ckb.secp256k1.Fr) -> typing.Tuple[ckb.secp256k1.Fr, ckb.secp256k1.Fr, int]:
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.3 Signing Operation
     for _ in itertools.repeat(0):
@@ -23,7 +24,7 @@ def sign(prikey: ckb.secp256k1.Fr, m: ckb.secp256k1.Fr):
         return r, s, v
 
 
-def verify(pubkey: ckb.secp256k1.Pt, m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s: ckb.secp256k1.Fr):
+def verify(pubkey: ckb.secp256k1.Pt, m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s: ckb.secp256k1.Fr) -> bool:
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.4 Verifying Operation
     u1 = m / s
@@ -34,7 +35,7 @@ def verify(pubkey: ckb.secp256k1.Pt, m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s
     return v == r
 
 
-def pubkey(m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s: ckb.secp256k1.Fr, v: int):
+def pubkey(m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s: ckb.secp256k1.Fr, v: int) -> ckb.secp256k1.Pt:
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.6 Public Key Recovery Operation
     assert v in [0, 1, 2, 3]
