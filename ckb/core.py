@@ -1,10 +1,10 @@
 import ckb.bech32
 import ckb.config
+import ckb.ecdsa
 import ckb.molecule
 import ckb.secp256k1
 import hashlib
 import json
-import random
 import typing
 
 # 1 ckb = 10 ** 8 shannons
@@ -52,25 +52,12 @@ class PriKey:
     def sign(self, data: bytearray):
         assert len(data) == 32
         m = ckb.secp256k1.Fr(int.from_bytes(data))
-        while True:
-            k = ckb.secp256k1.Fr(random.randint(0, ckb.secp256k1.N - 1))
-            R = ckb.secp256k1.G * k
-            r = ckb.secp256k1.Fr(R.x.x)
-            if r.x == 0:
-                continue
-            s = (m + ckb.secp256k1.Fr(self.n) * r) / k
-            if s.x == 0:
-                continue
-            v = 0
-            if R.y.x & 1 == 1:
-                v |= 1
-            if R.x.x >= ckb.secp256k1.N:
-                v |= 2
-            # Here we do not adjust the sign of s.
-            # Doc: https://ethereum.stackexchange.com/questions/55245/why-is-s-in-transaction-signature-limited-to-n-21
-            # For BTC, v is in the prefix.
-            # For CKB, v is in the suffix.
-            return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
+        r, s, v = ckb.ecdsa.sign(ckb.secp256k1.Fr(self.n), m)
+        # Here we do not adjust the sign of s.
+        # Doc: https://ethereum.stackexchange.com/questions/55245/why-is-s-in-transaction-signature-limited-to-n-21
+        # For BTC, v is in the prefix.
+        # For CKB, v is in the suffix.
+        return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
 
 
 class PubKey:
