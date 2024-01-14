@@ -45,7 +45,7 @@ def pubkey(m: ckb.secp256k1.Fr, r: ckb.secp256k1.Fr, s: ckb.secp256k1.Fr, v: int
         x = ckb.secp256k1.Fq(r.x + ckb.secp256k1.N)
     y_y = x * x * x + ckb.secp256k1.A * x + ckb.secp256k1.B
     y = y_y ** ((ckb.secp256k1.P + 1) // 4)
-    if y.x & 1 != v & 1:
+    if v & 1 != y.x & 1:
         y = -y
     R = ckb.secp256k1.Pt(x, y)
     return (R * s - ckb.secp256k1.G * m) / r
