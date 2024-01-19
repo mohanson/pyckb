@@ -45,7 +45,7 @@ develop = ObjectDict({
 mainnet = ObjectDict({
     'hrp': 'ckb',
     # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
-    'url': 'https://mainnet.ckb.dev',
+    'url': 'https://mainnet.ckbapp.dev',
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
@@ -75,7 +75,7 @@ mainnet = ObjectDict({
 testnet = ObjectDict({
     'hrp': 'ckt',
     # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
-    'url': 'https://testnet.ckb.dev',
+    'url': 'https://testnet.ckbapp.dev',
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
