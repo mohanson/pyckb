@@ -29,6 +29,8 @@ class Bytenn:
 
     @staticmethod
     def molecule_read(data: bytearray):
+        l = int.from_bytes(data[:4], 'little')
+        assert l == len(data) - 4
         return data[4:]
 
     def molecule(self):
