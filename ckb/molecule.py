@@ -6,6 +6,11 @@ class Byte:
         assert 0 <= data and data <= 0xff
         self.data = data
 
+    @staticmethod
+    def molecule_read(data: bytearray):
+        assert len(data) == 1
+        return data[0]
+
     def molecule(self):
         return bytearray([self.data])
 
@@ -29,6 +34,8 @@ class Bytenn:
 
     @staticmethod
     def molecule_read(data: bytearray):
+        l = int.from_bytes(data[:4], 'little')
+        assert l == len(data) - 4
         return data[4:]
 
     def molecule(self):
