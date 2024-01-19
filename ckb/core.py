@@ -121,10 +121,11 @@ class Script:
     @staticmethod
     def molecule_read(data: bytearray):
         result = ckb.molecule.Dynvec.molecule_read(data)
-        code_hash = result[0]
-        hash_type = int(result[1][0])
-        args = ckb.molecule.Bytenn.molecule_read(result[2])
-        return Script(code_hash, hash_type, args)
+        return Script(
+            ckb.molecule.Byte32.molecule_read(result[0]),
+            ckb.molecule.Byte.molecule_read(result[1]),
+            ckb.molecule.Bytenn.molecule_read(result[2]),
+        )
 
     def molecule(self):
         return ckb.molecule.Dynvec([
@@ -202,7 +203,7 @@ class OutPoint:
     def molecule_read(data: bytearray):
         assert len(data) == 36
         return OutPoint(
-            data[0x00:0x20],
+            ckb.molecule.Byte32.molecule_read(data[0x00:0x20]),
             ckb.molecule.U32.molecule_read(data[0x20:0x24])
         )
 
