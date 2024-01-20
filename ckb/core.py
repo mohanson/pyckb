@@ -124,14 +124,14 @@ class Script:
         return Script(
             ckb.molecule.Byte32.molecule_read(result[0]),
             ckb.molecule.Byte.molecule_read(result[1]),
-            ckb.molecule.Bytenn.molecule_read(result[2]),
+            ckb.molecule.Bytes.molecule_read(result[2]),
         )
 
     def molecule(self):
         return ckb.molecule.Dynvec([
             ckb.molecule.Byte32(self.code_hash),
             ckb.molecule.Byte(self.hash_type),
-            ckb.molecule.Bytenn(self.args)
+            ckb.molecule.Bytes(self.args)
         ]).molecule()
 
     @staticmethod
@@ -398,7 +398,7 @@ class TransactionRaw:
             [ckb.molecule.Byte32.molecule_read(e) for e in ckb.molecule.Fixvec.molecule_read(result[2])],
             [CellInput.molecule_read(e) for e in ckb.molecule.Fixvec.molecule_read(result[3])],
             [CellOutput.molecule_read(e) for e in ckb.molecule.Dynvec.molecule_read(result[4])],
-            [ckb.molecule.Bytenn.molecule_read(e) for e in ckb.molecule.Dynvec.molecule_read(result[5])]
+            [ckb.molecule.Bytes.molecule_read(e) for e in ckb.molecule.Dynvec.molecule_read(result[5])]
         )
 
     def molecule(self):
@@ -408,7 +408,7 @@ class TransactionRaw:
             ckb.molecule.Fixvec([ckb.molecule.Byte32(e) for e in self.header_deps]),
             ckb.molecule.Fixvec(self.inputs),
             ckb.molecule.Dynvec(self.outputs),
-            ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.outputs_data])
+            ckb.molecule.Dynvec([ckb.molecule.Bytes(e) for e in self.outputs_data])
         ]).molecule()
 
     @staticmethod
@@ -453,13 +453,13 @@ class Transaction:
         result = ckb.molecule.Dynvec.molecule_read(data)
         return Transaction(
             TransactionRaw.molecule_read(result[0]),
-            [ckb.molecule.Bytenn.molecule_read(e) for e in ckb.molecule.Dynvec.molecule_read(result[1])],
+            [ckb.molecule.Bytes.molecule_read(e) for e in ckb.molecule.Dynvec.molecule_read(result[1])],
         )
 
     def molecule(self):
         return ckb.molecule.Dynvec([
             self.raw,
-            ckb.molecule.Dynvec([ckb.molecule.Bytenn(e) for e in self.witnesses])
+            ckb.molecule.Dynvec([ckb.molecule.Bytes(e) for e in self.witnesses])
         ]).molecule()
 
     @staticmethod
@@ -512,16 +512,16 @@ class WitnessArgs:
     def molecule_read(data: bytearray):
         result = ckb.molecule.Dynvec.molecule_read(data)
         return WitnessArgs(
-            ckb.molecule.Bytenn.molecule_read(result[0]) if result[0] else None,
-            ckb.molecule.Bytenn.molecule_read(result[1]) if result[1] else None,
-            ckb.molecule.Bytenn.molecule_read(result[2]) if result[2] else None,
+            ckb.molecule.Bytes.molecule_read(result[0]) if result[0] else None,
+            ckb.molecule.Bytes.molecule_read(result[1]) if result[1] else None,
+            ckb.molecule.Bytes.molecule_read(result[2]) if result[2] else None,
         )
 
     def molecule(self):
         return ckb.molecule.Dynvec([
-            ckb.molecule.Option(ckb.molecule.Bytenn(self.lock) if self.lock else None),
-            ckb.molecule.Option(ckb.molecule.Bytenn(self.input_type) if self.input_type else None),
-            ckb.molecule.Option(ckb.molecule.Bytenn(self.output_type) if self.output_type else None),
+            ckb.molecule.Option(ckb.molecule.Bytes(self.lock) if self.lock else None),
+            ckb.molecule.Option(ckb.molecule.Bytes(self.input_type) if self.input_type else None),
+            ckb.molecule.Option(ckb.molecule.Bytes(self.output_type) if self.output_type else None),
         ]).molecule()
 
     def json(self):

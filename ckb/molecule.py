@@ -6,6 +6,10 @@ class Byte:
         assert 0 <= data and data <= 0xff
         self.data = data
 
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
+
     @staticmethod
     def molecule_read(data: bytearray):
         assert len(data) == 1
@@ -20,6 +24,10 @@ class Byte32:
         assert len(data) == 32
         self.data = data
 
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
+
     @staticmethod
     def molecule_read(data: bytearray):
         return data
@@ -28,9 +36,13 @@ class Byte32:
         return self.data
 
 
-class Bytenn:
+class Bytes:
     def __init__(self, data):
         self.data = data
+
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -48,6 +60,10 @@ class Bytenn:
 class Dynvec:
     def __init__(self, data):
         self.data = data
+
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -82,6 +98,10 @@ class Fixvec:
     def __init__(self, data):
         self.data = data
 
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
+
     @staticmethod
     def molecule_read(data: bytearray):
         assert len(data) >= 4
@@ -105,6 +125,10 @@ class Option:
     def __init__(self, data):
         self.data = data
 
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
+
     def molecule(self):
         return self.data.molecule() if self.data else bytearray()
 
@@ -112,6 +136,10 @@ class Option:
 class Struct:
     def __init__(self, data):
         self.data = data
+
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
 
     def molecule(self):
         r = bytearray()
@@ -125,6 +153,10 @@ class U32:
         assert 0 <= data and data <= 0xffffffff
         self.data = data
 
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
+
     @staticmethod
     def molecule_read(data: bytearray):
         return int.from_bytes(data, 'little')
@@ -137,6 +169,10 @@ class U64:
     def __init__(self, data):
         assert 0 <= data and data <= 0xffffffffffffffff
         self.data = data
+
+    def __eq__(self, other):
+        a = self.data == other.data
+        return a
 
     @staticmethod
     def molecule_read(data: bytearray):
