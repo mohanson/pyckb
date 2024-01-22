@@ -2,7 +2,7 @@
 
 
 class Byte:
-    def __init__(self, data):
+    def __init__(self, data: int):
         assert 0 <= data and data <= 0xff
         self.data = data
 
@@ -20,7 +20,7 @@ class Byte:
 
 
 class Byte32:
-    def __init__(self, data):
+    def __init__(self, data: bytearray):
         assert len(data) == 32
         self.data = data
 
@@ -37,7 +37,7 @@ class Byte32:
 
 
 class Bytes:
-    def __init__(self, data):
+    def __init__(self, data: bytearray):
         self.data = data
 
     def __eq__(self, other):
@@ -149,7 +149,7 @@ class Struct:
 
 
 class U32:
-    def __init__(self, data):
+    def __init__(self, data: int):
         assert 0 <= data and data <= 0xffffffff
         self.data = data
 
@@ -166,7 +166,7 @@ class U32:
 
 
 class U64:
-    def __init__(self, data):
+    def __init__(self, data: int):
         assert 0 <= data and data <= 0xffffffffffffffff
         self.data = data
 
