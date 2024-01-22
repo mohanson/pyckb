@@ -50,3 +50,12 @@ def test_script():
 def test_sign():
     prikey = ckb.core.PriKey(1)
     prikey.sign(bytearray.fromhex('9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'))
+
+
+def test_witness_args():
+    witness_args = ckb.core.WitnessArgs(
+        bytearray([0x00, 0x01, 0x02, 0x03]),
+        bytearray([0x00, 0x01, 0x02, 0x03]),
+        None,
+    )
+    assert ckb.core.WitnessArgs.molecule_read(witness_args.molecule()) == witness_args

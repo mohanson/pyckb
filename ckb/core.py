@@ -5,7 +5,6 @@ import ckb.molecule
 import ckb.secp256k1
 import hashlib
 import json
-import typing
 
 # 1 ckb = 10 ** 8 shannons
 shannon = 10 ** 8
@@ -265,7 +264,7 @@ class CellInput:
 
 
 class CellOutput:
-    def __init__(self, capacity: int, lock: Script, type: typing.Optional[Script]):
+    def __init__(self, capacity: int, lock: Script, type: Script | None):
         self.capacity = capacity
         self.lock = lock
         self.type = type
@@ -364,11 +363,11 @@ class TransactionRaw:
     def __init__(
         self,
         version: int,
-        cell_deps: typing.List[CellDep],
-        header_deps: typing.List[bytearray],
-        inputs: typing.List[CellInput],
-        outputs: typing.List[CellOutput],
-        outputs_data: typing.List[bytearray]
+        cell_deps: list[CellDep],
+        header_deps: list[bytearray],
+        inputs: list[CellInput],
+        outputs: list[CellOutput],
+        outputs_data: list[bytearray]
     ):
         self.version = version
         self.cell_deps = cell_deps
@@ -436,7 +435,7 @@ class TransactionRaw:
 
 
 class Transaction:
-    def __init__(self, raw: TransactionRaw, witnesses: typing.List[bytearray]):
+    def __init__(self, raw: TransactionRaw, witnesses: list[bytearray]):
         self.raw = raw
         self.witnesses = witnesses
 
@@ -489,12 +488,7 @@ def epoch_decode(v: int):
 
 
 class WitnessArgs:
-    def __init__(
-        self,
-        lock: typing.Optional[bytearray],
-        input_type: typing.Optional[bytearray],
-        output_type: typing.Optional[bytearray]
-    ):
+    def __init__(self, lock: bytearray | None, input_type: bytearray | None, output_type: bytearray | None):
         self.lock = lock
         self.input_type = input_type
         self.output_type = output_type
