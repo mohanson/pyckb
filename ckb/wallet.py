@@ -23,6 +23,9 @@ class WalletTransactionAnalyzer:
             output_capacity += e.capacity
         assert sender_capacity - output_capacity <= 1 * ckb.core.shannon
 
+    def analyze_outputs_data(self):
+        assert len(self.tx.raw.outputs) == len(self.tx.raw.outputs_data)
+
     def analyze_since(self):
         # Transaction since precondition
         # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0017-tx-valid-since/0017-tx-valid-since.md
@@ -49,6 +52,7 @@ class WalletTransactionAnalyzer:
 
     def analyze(self):
         self.analyze_mining_fee()
+        self.analyze_outputs_data()
         self.analyze_since()
 
 
