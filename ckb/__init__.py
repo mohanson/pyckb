@@ -1,4 +1,5 @@
 from . import bech32
+from . import cobuild
 from . import config
 from . import core
 from . import ecdsa
