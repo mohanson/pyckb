@@ -31,6 +31,16 @@ $ python example/addr.py 0x00000000000000000000000000000000000000000000000000000
 # ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40
 ```
 
+**example/capacity.py**
+
+Get the capacity by an address.
+
+```sh
+$ python example/capacity.py ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40
+
+# 3523312.39054609
+```
+
 **example/deploy.py**
 
 Deploy a script to the chain.
