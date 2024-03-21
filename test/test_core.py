@@ -4,11 +4,11 @@ import ckb
 def test_addr():
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
-    args = ckb.core.hash(pubkey.molecule())[:20].hex()
+    args = ckb.core.hash(pubkey.molecule())[:20]
     script = ckb.core.Script(
         ckb.config.current.script.secp256k1_blake160.code_hash,
         ckb.config.current.script.secp256k1_blake160.hash_type,
-        bytearray.fromhex(args)
+        args
     )
     addr = ckb.core.address_encode(script)
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
