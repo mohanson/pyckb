@@ -1,17 +1,13 @@
 import argparse
 import ckb
 
-# Calculate the address from a private key.
+# Calculate address from private key in secp256k1 lock.
 
 parser = argparse.ArgumentParser()
 parser.add_argument('prikey', type=str, help='private key')
 args = parser.parse_args()
 
-base = 10
-if args.prikey.startswith('0x'):
-    base = 16
-
-prikey = ckb.core.PriKey(int(args.prikey, base))
+prikey = ckb.core.PriKey(int(args.prikey, 0))
 pubkey = prikey.pubkey()
 args = ckb.core.hash(pubkey.molecule())[:20]
 script = ckb.core.Script(

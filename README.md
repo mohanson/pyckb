@@ -23,7 +23,7 @@ By default, pyckb is configured on the testnet. To switch networks, see `ckb.con
 
 **example/addr.py**
 
-Calculate the address from a private key.
+Calculate address from private key in secp256k1 lock.
 
 ```sh
 $ python example/addr.py 0x0000000000000000000000000000000000000000000000000000000000000001
