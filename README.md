@@ -72,7 +72,7 @@ $ python example/redeem.py
 
 **example/txdump.py**
 
-Dump full transaction data for [ckb-debugger](https://github.com/nervosnetwork/ckb-standalone-debugger) to use.
+Dump full transaction data for ckb-debugger to use.
 
 ```sh
 $ python example/txdump.py -x 0x123b09a89e65cc9c375dab739c9c921f7067d0b205e563135bb5a1221f8948d9

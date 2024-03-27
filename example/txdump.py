@@ -61,7 +61,7 @@ for c in tx.raw.cell_deps:
     })
     if c.dep_type != 1:
         continue
-    for e in ckb.molecule.Fixvec.molecule_read(c_data):
+    for e in ckb.molecule.decode_fixvec(c_data):
         o = ckb.core.OutPoint.molecule_read(e)
         o_tx_rpc = ckb.rpc.get_transaction(f'0x{o.tx_hash.hex()}')
         o_tx = ckb.core.Transaction.json_read(o_tx_rpc['transaction'])
