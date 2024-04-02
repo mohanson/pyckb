@@ -11,7 +11,7 @@ import time
 # https://faucet.nervos.org/
 
 parser = argparse.ArgumentParser()
-parser.add_argument('addr', type=str, help='ckb address')
+parser.add_argument('--addr', type=str, required=True, help='ckb address')
 args = parser.parse_args()
 
 kana = ckb.wallet.Wallet(random.randint(0, ckb.secp256k1.N - 1))

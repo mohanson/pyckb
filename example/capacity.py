@@ -4,8 +4,8 @@ import ckb
 # Get the capacity by an address.
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--addr', type=str, required=True, help='address')
 parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='testnet')
-parser.add_argument('addr', type=str, help='address')
 args = parser.parse_args()
 
 if args.net == 'develop':

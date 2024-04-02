@@ -5,9 +5,9 @@ import json
 # Dump full transaction data for [ckb-debugger](https://github.com/nervosnetwork/ckb-standalone-debugger) to use.
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--file', type=str, help='transaction file')
+parser.add_argument('--hash', type=str, help='transaction hash')
 parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='testnet')
-parser.add_argument('-f', '--file', type=str, help='transaction file')
-parser.add_argument('-x', '--hash', type=str, help='transaction hash')
 args = parser.parse_args()
 
 assert args.file or args.hash
