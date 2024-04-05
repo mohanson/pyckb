@@ -21,7 +21,7 @@ resp = requests.post('https://faucet-api.nervos.org/claim_events', json={
         'amount': '300000'
     }
 })
-assert resp.status_code == 200
+assert resp.status_code == 200, resp.text
 id = resp.json()['data']['id']
 
 for _ in itertools.repeat(0):
