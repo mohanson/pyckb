@@ -19,7 +19,7 @@ $ python -m pip install . --editable
 
 ## Usage
 
-By default, pyckb is configured on the testnet. To switch networks, see `ckb.config`.
+By default, pyckb is configured on the develop. To switch networks, see `ckb.config`.
 
 **example/addr.py**
 
@@ -56,7 +56,7 @@ $ python example/deploy.py --prikey 0x000000000000000000000000000000000000000000
 
 **example/faucet.py**
 
-One faucet to send 300000 CKB to any ckb addresses. The script execution takes 2 blocks, which is about 20 seconds.
+One faucet to send 300000 CKB to any ckb addresses. Note this only takes effect on the testnet.
 
 ```sh
 $ python example/faucet.py --addr ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40
@@ -67,7 +67,7 @@ $ python example/faucet.py --addr ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0v
 Attempt to withdraw all funds from Dao. When running the test case of pyckb by `pytest -v`, a part of ckb will be locked in Dao. Use this script to recover this part of the funds.
 
 ```sh
-$ python example/redeem.py
+$ python example/redeem.py --prikey 0x0000000000000000000000000000000000000000000000000000000000000001
 ```
 
 **example/txdump.py**
@@ -75,7 +75,21 @@ $ python example/redeem.py
 Dump full transaction data for ckb-debugger to use.
 
 ```sh
-$ python example/txdump.py --hash 0x123b09a89e65cc9c375dab739c9c921f7067d0b205e563135bb5a1221f8948d9
+$ python example/txdump.py --net testnet --hash 0x123b09a89e65cc9c375dab739c9c921f7067d0b205e563135bb5a1221f8948d9
+```
+
+## Test
+
+```sh
+$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.115.0/ckb_v0.115.0_x86_64-unknown-linux-gnu.tar.gz
+$ tar -zxvf ckb_v0.115.0_x86_64-unknown-linux-gnu.tar.gz
+$ cd ckb_v0.115.0_x86_64-unknown-linux-gnu/
+
+$ ckb init --chain dev --ba-arg 0x75178f34549c5fe9cd1a0c57aebd01e7ddf9249e --ba-message 0xabcd
+$ ckb run --indexer
+$ ckb miner
+
+$ pytest -v
 ```
 
 ## License

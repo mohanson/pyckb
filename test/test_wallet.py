@@ -8,6 +8,8 @@ def test_wallet_addr():
 
 
 def test_wallet_transfer():
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
     mate = ckb.wallet.Wallet(2)
     capacity = 100 * ckb.core.shannon
@@ -22,12 +24,16 @@ def test_wallet_transfer():
 
 
 def test_wallet_script_deploy():
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
     hash = user.script_deploy(user.script, bytearray([0, 1, 2, 3]))
     ckb.rpc.wait(f'0x{hash.hex()}')
 
 
 def test_wallet_script_deploy_type_id():
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
     hash = user.script_deploy_type_id(user.script, bytearray([0, 1, 2, 3]))
     ckb.rpc.wait(f'0x{hash.hex()}')
@@ -37,6 +43,8 @@ def test_wallet_script_deploy_type_id():
 
 
 def test_wallet_dao():
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
     hash = user.dao_deposit(200 * ckb.core.shannon)
     ckb.rpc.wait(f'0x{hash.hex()}')

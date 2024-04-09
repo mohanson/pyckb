@@ -4,7 +4,7 @@ import ckb
 # Calculate address from private key in secp256k1 lock.
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='testnet')
+parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='develop')
 parser.add_argument('--prikey', type=str, required=True, help='private key')
 args = parser.parse_args()
 

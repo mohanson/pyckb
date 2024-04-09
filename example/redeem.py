@@ -1,11 +1,24 @@
+import argparse
 import ckb
 import math
 
 # Attempt to withdraw all funds from Dao. When running the test case of pyckb by 'pytest -v', a part of ckb will be
 # locked in Dao. Use this script to recover this part of the funds.
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='develop')
+parser.add_argument('--prikey', type=str, required=True, help='private key')
+args = parser.parse_args()
 
-user = ckb.wallet.Wallet(1)
+if args.net == 'develop':
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
+if args.net == 'mainnet':
+    ckb.config.current = ckb.config.mainnet
+if args.net == 'testnet':
+    ckb.config.current = ckb.config.testnet
+
+user = ckb.wallet.Wallet(int(args.prikey, 0))
 for e in user.dao_livecell():
     if e['output_data'] == '0x0000000000000000':
         out_point = ckb.core.OutPoint.json_read(e['out_point'])
