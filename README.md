@@ -14,7 +14,7 @@ $ python -m pip install pyckb
 # or
 $ git clone https://github.com/mohanson/pyckb
 $ cd pyckb
-$ python -m pip install . --editable
+$ python -m pip install --editable . --config-settings editable_mode=strict
 ```
 
 ## Usage
