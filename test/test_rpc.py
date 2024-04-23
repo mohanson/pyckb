@@ -27,6 +27,10 @@ def test_get_cells_capacity():
     assert int(ckb.rpc.get_cells_capacity(search)['capacity'], 16) >= 0
 
 
+def test_get_current_epoch():
+    assert int(ckb.rpc.get_current_epoch()['number'], 0) >= 0
+
+
 def test_get_indexer_tip():
     assert int(ckb.rpc.get_indexer_tip()['block_number'], 16) >= 0
 
