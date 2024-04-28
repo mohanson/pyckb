@@ -159,7 +159,7 @@ class Script:
         return hash(self.molecule())
 
 
-def address_encode(script: Script):
+def address_encode(script: Script) -> str:
     # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
     # See: https://github.com/rev-chaos/ckb-address-demo/blob/master/ckb_addr_test.py
     payload = bytearray()
@@ -174,7 +174,7 @@ def address_encode(script: Script):
     )
 
 
-def address_decode(addr: str):
+def address_decode(addr: str) -> Script:
     _, data = ckb.bech32m.bech32m_decode(addr)
     payload = bytearray(ckb.bech32m.bech32m_re_arrange_8(data))
     assert payload[0] == 0
