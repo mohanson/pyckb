@@ -6,8 +6,6 @@ import ckb.secp256k1
 import hashlib
 import json
 
-# 1 ckb = 10 ** 8 shannons
-shannon = 10 ** 8
 # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md
 # The Type ID code cell uses a special type script hash, which is just the ascii codes in hex of the text TYPE_ID.
 type_id_code_hash = bytearray.fromhex('00000000000000000000000000000000000000000000000000545950455f4944')

@@ -23,4 +23,4 @@ capacity = int(ckb.rpc.get_cells_capacity({
         'script_len_range': ['0x0', '0x1']
     }
 })['capacity'], 16)
-print(capacity / ckb.core.shannon)
+print(capacity / ckb.denomination.ckbytes)

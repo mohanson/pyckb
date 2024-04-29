@@ -12,7 +12,7 @@ def test_wallet_transfer():
     ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
     mate = ckb.wallet.Wallet(2)
-    capacity = 100 * ckb.core.shannon
+    capacity = 100 * ckb.denomination.ckbytes
     capacity_old = mate.capacity()
     hash = user.transfer(mate.script, capacity)
     ckb.rpc.wait(f'0x{hash.hex()}')
@@ -46,7 +46,7 @@ def test_wallet_dao():
     ckb.config.upgrade('http://127.0.0.1:8114')
     ckb.config.current = ckb.config.develop
     user = ckb.wallet.Wallet(1)
-    hash = user.dao_deposit(200 * ckb.core.shannon)
+    hash = user.dao_deposit(200 * ckb.denomination.ckbytes)
     ckb.rpc.wait(f'0x{hash.hex()}')
     hash = user.dao_prepare(ckb.core.OutPoint(hash, 0))
     ckb.rpc.wait(f'0x{hash.hex()}')

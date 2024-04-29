@@ -21,7 +21,7 @@ class WalletTransactionAnalyzer:
             sender_capacity += origin.capacity
         for e in self.tx.raw.outputs:
             output_capacity += e.capacity
-        assert sender_capacity - output_capacity <= 1 * ckb.core.shannon
+        assert sender_capacity - output_capacity <= 1 * ckb.denomination.ckbytes
 
     def analyze_outputs_data(self):
         assert len(self.tx.raw.outputs) == len(self.tx.raw.outputs_data)
@@ -104,7 +104,7 @@ class Wallet:
         })['capacity'], 16)
 
     def transfer(self, script: ckb.core.Script, capacity: int):
-        assert capacity >= 61 * ckb.core.shannon
+        assert capacity >= 61 * ckb.denomination.ckbytes
         assert self.capacity() > capacity
         sender_capacity = 0
         accept_capacity = capacity
@@ -125,9 +125,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -173,7 +173,7 @@ class Wallet:
 
     def script_deploy(self, script: ckb.core.Script, data: bytearray):
         sender_capacity = 0
-        accept_capacity = (61 + len(data)) * ckb.core.shannon
+        accept_capacity = (61 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
         change_capacity = 0
         change_script = self.script
@@ -191,9 +191,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -209,7 +209,7 @@ class Wallet:
 
     def script_deploy_type_id(self, script: ckb.core.Script, data: bytearray):
         sender_capacity = 0
-        accept_capacity = (126 + len(data)) * ckb.core.shannon
+        accept_capacity = (126 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
         accept_typeid = ckb.core.Script(ckb.core.type_id_code_hash, ckb.core.type_id_hash_type, bytearray([0] * 32))
         change_capacity = 0
@@ -228,9 +228,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#type-id
         tx.raw.outputs[0].type.args = ckb.core.hash(tx.raw.inputs[0].molecule() + bytearray([0] * 8))
         tx.raw.outputs[1].capacity = change_capacity
@@ -252,7 +252,7 @@ class Wallet:
         assert origin.type.code_hash == ckb.core.type_id_code_hash
         assert origin.type.hash_type == ckb.core.type_id_hash_type
         sender_capacity = origin.capacity
-        accept_capacity = (126 + len(data)) * ckb.core.shannon
+        accept_capacity = (126 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
         accept_typeid = origin.type
         change_capacity = 0
@@ -272,9 +272,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -290,7 +290,7 @@ class Wallet:
 
     def dao_deposit(self, capacity: int):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
-        assert capacity >= 102 * ckb.core.shannon
+        assert capacity >= 102 * ckb.denomination.ckbytes
         assert self.capacity() > capacity
         sender_capacity = 0
         accept_capacity = capacity
@@ -317,9 +317,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -364,9 +364,9 @@ class Wallet:
             sender_capacity += cell_capacity
             tx.raw.inputs.append(cell_input)
             change_capacity = sender_capacity - accept_capacity - len(tx.molecule()) - 4
-            if change_capacity >= 61 * ckb.core.shannon:
+            if change_capacity >= 61 * ckb.denomination.ckbytes:
                 break
-        assert change_capacity >= 61 * ckb.core.shannon
+        assert change_capacity >= 61 * ckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
@@ -406,7 +406,7 @@ class Wallet:
             deposit_block_epoch[2],
         )
         extract_since = 0x2000000000000000 + extract_since_epoch
-        occupy_capacity = 102 * ckb.core.shannon
+        occupy_capacity = 102 * ckb.denomination.ckbytes
         sender_capacity = (origin.capacity - occupy_capacity) * prepare_dao_ar // deposit_dao_ar + occupy_capacity
         accept_capacity = 0
         accept_script = self.script

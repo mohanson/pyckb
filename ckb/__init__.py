@@ -1,6 +1,7 @@
 from . import bech32m
 from . import config
 from . import core
+from . import denomination
 from . import ecdsa
 from . import molecule
 from . import rpc
