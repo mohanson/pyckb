@@ -24,8 +24,7 @@ class PriKey:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.n == other.n
-        return a
+        return self.n == other.n
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -66,9 +65,10 @@ class PubKey:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.x == other.x
-        b = self.y == other.y
-        return a and b
+        return all([
+            self.x == other.x,
+            self.y == other.y,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -110,10 +110,11 @@ class Script:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.code_hash == other.code_hash
-        b = self.hash_type == other.hash_type
-        c = self.args == other.args
-        return a and b and c
+        return all([
+            self.code_hash == other.code_hash,
+            self.hash_type == other.hash_type,
+            self.args == other.args,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -192,9 +193,10 @@ class OutPoint:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.tx_hash == other.tx_hash
-        b = self.index == other.index
-        return a and b
+        return all([
+            self.tx_hash == other.tx_hash,
+            self.index == other.index,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -237,9 +239,10 @@ class CellInput:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.since == other.since
-        b = self.previous_output == other.previous_output
-        return a and b
+        return all([
+            self.since == other.since,
+            self.previous_output == other.previous_output,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -285,10 +288,11 @@ class CellOutput:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.capacity == other.capacity
-        b = self.lock == other.lock
-        c = self.type == other.type
-        return a and b and c
+        return all([
+            self.capacity == other.capacity,
+            self.lock == other.lock,
+            self.type == other.type,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -330,9 +334,10 @@ class CellDep:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.out_point == other.out_point
-        b = self.dep_type == other.dep_type
-        return a and b
+        return all([
+            self.out_point == other.out_point,
+            self.dep_type == other.dep_type,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -399,13 +404,14 @@ class TransactionRaw:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.version == other.version
-        b = self.cell_deps == other.cell_deps
-        c = self.header_deps == other.header_deps
-        d = self.inputs == other.inputs
-        e = self.outputs == other.outputs
-        f = self.outputs_data == other.outputs_data
-        return a and b and c and d and e and f
+        return all([
+            self.version == other.version,
+            self.cell_deps == other.cell_deps,
+            self.header_deps == other.header_deps,
+            self.inputs == other.inputs,
+            self.outputs == other.outputs,
+            self.outputs_data == other.outputs_data,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -462,9 +468,10 @@ class Transaction:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.raw == other.raw
-        b = self.witnesses == other.witnesses
-        return a and b
+        return all([
+            self.raw == other.raw,
+            self.witnesses == other.witnesses,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -516,10 +523,11 @@ class WitnessArgs:
         return json.dumps(self.json())
 
     def __eq__(self, other):
-        a = self.lock == other.lock
-        b = self.input_type == other.input_type
-        c = self.output_type == other.output_type
-        return a and b and c
+        return all([
+            self.lock == other.lock,
+            self.input_type == other.input_type,
+            self.output_type == other.output_type,
+        ])
 
     @staticmethod
     def molecule_read(data: bytearray):

@@ -70,8 +70,7 @@ class Byte:
         self.data = data
 
     def __eq__(self, other):
-        a = self.data == other.data
-        return a
+        return self.data == other.data
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -92,8 +91,7 @@ class Byte32:
         self.data = data
 
     def __eq__(self, other):
-        a = self.data == other.data
-        return a
+        return self.data == other.data
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -112,8 +110,7 @@ class Bytes:
         self.data = data
 
     def __eq__(self, other):
-        a = self.data == other.data
-        return a
+        return self.data == other.data
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -134,8 +131,7 @@ class U32:
         self.data = data
 
     def __eq__(self, other):
-        a = self.data == other.data
-        return a
+        return self.data == other.data
 
     @staticmethod
     def molecule_read(data: bytearray):
@@ -155,8 +151,7 @@ class U64:
         self.data = data
 
     def __eq__(self, other):
-        a = self.data == other.data
-        return a
+        return self.data == other.data
 
     @staticmethod
     def molecule_read(data: bytearray):
