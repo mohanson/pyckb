@@ -1,9 +1,10 @@
 import ckb.secp256k1
 import itertools
 import random
+import typing
 
 
-def sign(prikey: ckb.secp256k1.Fr, m: ckb.secp256k1.Fr) -> tuple[ckb.secp256k1.Fr, ckb.secp256k1.Fr, int]:
+def sign(prikey: ckb.secp256k1.Fr, m: ckb.secp256k1.Fr) -> typing.Tuple[ckb.secp256k1.Fr, ckb.secp256k1.Fr, int]:
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.3 Signing Operation
     for _ in itertools.repeat(0):
