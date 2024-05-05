@@ -72,6 +72,9 @@ class Byte:
     def __eq__(self, other):
         return self.data == other.data
 
+    def molecule(self):
+        return bytearray([self.data])
+
     @staticmethod
     def molecule_decode(data: bytearray):
         assert len(data) == 1
@@ -80,9 +83,6 @@ class Byte:
     @staticmethod
     def molecule_size():
         return 1
-
-    def molecule(self):
-        return bytearray([self.data])
 
 
 class Byte32:
@@ -93,6 +93,9 @@ class Byte32:
     def __eq__(self, other):
         return self.data == other.data
 
+    def molecule(self):
+        return self.data
+
     @staticmethod
     def molecule_decode(data: bytearray):
         return data
@@ -100,9 +103,6 @@ class Byte32:
     @staticmethod
     def molecule_size():
         return 32
-
-    def molecule(self):
-        return self.data
 
 
 class Bytes:
@@ -112,17 +112,17 @@ class Bytes:
     def __eq__(self, other):
         return self.data == other.data
 
-    @staticmethod
-    def molecule_decode(data: bytearray):
-        l = int.from_bytes(data[:4], 'little')
-        assert l == len(data) - 4
-        return data[4:]
-
     def molecule(self):
         r = bytearray()
         r.extend(len(self.data).to_bytes(4, 'little'))
         r.extend(self.data)
         return r
+
+    @staticmethod
+    def molecule_decode(data: bytearray):
+        l = int.from_bytes(data[:4], 'little')
+        assert l == len(data) - 4
+        return data[4:]
 
 
 class U32:
@@ -133,6 +133,9 @@ class U32:
     def __eq__(self, other):
         return self.data == other.data
 
+    def molecule(self):
+        return self.data.to_bytes(4, 'little')
+
     @staticmethod
     def molecule_decode(data: bytearray):
         return int.from_bytes(data, 'little')
@@ -140,9 +143,6 @@ class U32:
     @staticmethod
     def molecule_size():
         return 4
-
-    def molecule(self):
-        return self.data.to_bytes(4, 'little')
 
 
 class U64:
@@ -153,6 +153,9 @@ class U64:
     def __eq__(self, other):
         return self.data == other.data
 
+    def molecule(self):
+        return self.data.to_bytes(8, 'little')
+
     @staticmethod
     def molecule_decode(data: bytearray):
         return int.from_bytes(data, 'little')
@@ -160,6 +163,3 @@ class U64:
     @staticmethod
     def molecule_size():
         return 8
-
-    def molecule(self):
-        return self.data.to_bytes(8, 'little')

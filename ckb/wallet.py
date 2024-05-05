@@ -63,7 +63,7 @@ class Wallet:
         self.script = ckb.core.Script(
             ckb.config.current.script.secp256k1_blake160.code_hash,
             ckb.config.current.script.secp256k1_blake160.hash_type,
-            ckb.core.hash(self.pubkey.molecule())[:20]
+            ckb.core.hash(self.pubkey.sec())[:20]
         )
         self.addr = ckb.core.address_encode(self.script)
 

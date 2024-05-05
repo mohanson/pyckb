@@ -26,20 +26,20 @@ class PriKey:
     def __eq__(self, other):
         return self.n == other.n
 
-    @staticmethod
-    def molecule_decode(data: bytearray):
-        assert len(data) == 32
-        return PriKey(int.from_bytes(data))
-
-    def molecule(self):
-        return bytearray(self.n.to_bytes(32))
+    def json(self):
+        return f'0x{self.n:064x}'
 
     @staticmethod
     def json_decode(data: str):
         return PriKey(int(data, 16))
 
-    def json(self):
-        return f'0x{self.n:064x}'
+    def molecule(self):
+        return bytearray(self.n.to_bytes(32))
+
+    @staticmethod
+    def molecule_decode(data: bytearray):
+        assert len(data) == 32
+        return PriKey(int.from_bytes(data))
 
     def pubkey(self):
         pubkey = ckb.secp256k1.G * ckb.secp256k1.Fr(self.n)
@@ -70,19 +70,16 @@ class PubKey:
             self.y == other.y,
         ])
 
-    @staticmethod
-    def molecule_decode(data: bytearray):
-        assert len(data) == 33
-        o = data[0]
-        x = int.from_bytes(data[1:33])
-        y_x_y = x * x * x + ckb.secp256k1.A.x * x + ckb.secp256k1.B.x
-        y = pow(y_x_y, (ckb.secp256k1.P + 1) // 4, ckb.secp256k1.P)
-        if y & 1 != o - 2:
-            return PubKey(x, -y % ckb.secp256k1.P)
-        else:
-            return PubKey(x, +y)
+    def json(self):
+        return {
+            'x': f'0x{self.x:064x}',
+            'y': f'0x{self.y:064x}'
+        }
 
-    def molecule(self):
+    def sec(self):
+        # The Standards of Efficient Cryptography (SEC) encoding is used to serialize ECDSA public keys. Public keys in
+        # Bitcoin are ECDSA points consisting of two coordinates (x,y). x and y may be smaller than 32 bytes in which
+        # case they must be padded with zeros to 32 bytes (H/T Coding Enthusiast).
         r = bytearray()
         if self.y & 1 == 0:
             r.append(0x02)
@@ -91,11 +88,19 @@ class PubKey:
         r.extend(self.x.to_bytes(32))
         return r
 
-    def json(self):
-        return {
-            'x': f'0x{self.x:064x}',
-            'y': f'0x{self.y:064x}'
-        }
+    @staticmethod
+    def sec_decode(data: bytearray):
+        p = data[0]
+        assert p in [0x02, 0x03, 0x04]
+        x = int.from_bytes(data[1:33])
+        if p == 0x04:
+            y = int.from_bytes(data[33:65])
+        else:
+            y_x_y = x * x * x + ckb.secp256k1.A.x * x + ckb.secp256k1.B.x
+            y = pow(y_x_y, (ckb.secp256k1.P + 1) // 4, ckb.secp256k1.P)
+            if y & 1 != p - 2:
+                y = -y % ckb.secp256k1.P
+        return PubKey(x, y)
 
 
 class Script:
@@ -116,32 +121,8 @@ class Script:
             self.args == other.args,
         ])
 
-    @staticmethod
-    def molecule_decode(data: bytearray):
-        result = ckb.molecule.decode_dynvec(data)
-        return Script(
-            ckb.molecule.Byte32.molecule_decode(result[0]),
-            ckb.molecule.Byte.molecule_decode(result[1]),
-            ckb.molecule.Bytes.molecule_decode(result[2]),
-        )
-
-    def molecule(self):
-        return ckb.molecule.encode_dynvec([
-            ckb.molecule.Byte32(self.code_hash).molecule(),
-            ckb.molecule.Byte(self.hash_type).molecule(),
-            ckb.molecule.Bytes(self.args).molecule()
-        ])
-
-    @staticmethod
-    def json_decode(data: dict):
-        code_hash = bytearray.fromhex(data['code_hash'][2:])
-        hash_type = {
-            'data': 0,
-            'type': 1,
-            'data1': 2,
-        }[data['hash_type']]
-        args = bytearray.fromhex(data['args'][2:])
-        return Script(code_hash, hash_type, args)
+    def hash(self):
+        return hash(self.molecule())
 
     def json(self):
         return {
@@ -154,8 +135,32 @@ class Script:
             'args': f'0x{self.args.hex()}',
         }
 
-    def hash(self):
-        return hash(self.molecule())
+    @staticmethod
+    def json_decode(data: dict):
+        code_hash = bytearray.fromhex(data['code_hash'][2:])
+        hash_type = {
+            'data': 0,
+            'type': 1,
+            'data1': 2,
+        }[data['hash_type']]
+        args = bytearray.fromhex(data['args'][2:])
+        return Script(code_hash, hash_type, args)
+
+    def molecule(self):
+        return ckb.molecule.encode_dynvec([
+            ckb.molecule.Byte32(self.code_hash).molecule(),
+            ckb.molecule.Byte(self.hash_type).molecule(),
+            ckb.molecule.Bytes(self.args).molecule()
+        ])
+
+    @staticmethod
+    def molecule_decode(data: bytearray):
+        result = ckb.molecule.decode_dynvec(data)
+        return Script(
+            ckb.molecule.Byte32.molecule_decode(result[0]),
+            ckb.molecule.Byte.molecule_decode(result[1]),
+            ckb.molecule.Bytes.molecule_decode(result[2]),
+        )
 
 
 def address_encode(script: Script) -> str:
@@ -198,6 +203,22 @@ class OutPoint:
             self.index == other.index,
         ])
 
+    def json(self):
+        return {
+            'tx_hash': '0x' + self.tx_hash.hex(),
+            'index': hex(self.index),
+        }
+
+    @staticmethod
+    def json_decode(data: dict):
+        return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
+
+    def molecule(self):
+        return ckb.molecule.encode_seq([
+            ckb.molecule.Byte32(self.tx_hash).molecule(),
+            ckb.molecule.U32(self.index).molecule(),
+        ])
+
     @staticmethod
     def molecule_decode(data: bytearray):
         result = ckb.molecule.decode_seq(data, [
@@ -212,22 +233,6 @@ class OutPoint:
     @staticmethod
     def molecule_size():
         return ckb.molecule.Byte32.molecule_size() + ckb.molecule.U32.molecule_size()
-
-    def molecule(self):
-        return ckb.molecule.encode_seq([
-            ckb.molecule.Byte32(self.tx_hash).molecule(),
-            ckb.molecule.U32(self.index).molecule(),
-        ])
-
-    @staticmethod
-    def json_decode(data: dict):
-        return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
-
-    def json(self):
-        return {
-            'tx_hash': '0x' + self.tx_hash.hex(),
-            'index': hex(self.index),
-        }
 
 
 class CellInput:
@@ -244,6 +249,24 @@ class CellInput:
             self.previous_output == other.previous_output,
         ])
 
+    def json(self):
+        return {
+            'since': hex(self.since),
+            'previous_output': self.previous_output.json()
+        }
+
+    @staticmethod
+    def json_decode(data: dict):
+        since = int(data['since'], 16)
+        previous_output = OutPoint.json_decode(data['previous_output'])
+        return CellInput(since, previous_output)
+
+    def molecule(self):
+        return ckb.molecule.encode_seq([
+            ckb.molecule.U64(self.since).molecule(),
+            self.previous_output.molecule(),
+        ])
+
     @staticmethod
     def molecule_decode(data: bytearray):
         result = ckb.molecule.decode_seq(data, [
@@ -258,24 +281,6 @@ class CellInput:
     @staticmethod
     def molecule_size():
         return ckb.molecule.U64.molecule_size() + OutPoint.molecule_size()
-
-    def molecule(self):
-        return ckb.molecule.encode_seq([
-            ckb.molecule.U64(self.since).molecule(),
-            self.previous_output.molecule(),
-        ])
-
-    @staticmethod
-    def json_decode(data: dict):
-        since = int(data['since'], 16)
-        previous_output = OutPoint.json_decode(data['previous_output'])
-        return CellInput(since, previous_output)
-
-    def json(self):
-        return {
-            'since': hex(self.since),
-            'previous_output': self.previous_output.json()
-        }
 
 
 class CellOutput:
@@ -294,14 +299,19 @@ class CellOutput:
             self.type == other.type,
         ])
 
+    def json(self):
+        return {
+            'capacity': hex(self.capacity),
+            'lock': self.lock.json(),
+            'type': self.type.json() if self.type else None
+        }
+
     @staticmethod
-    def molecule_decode(data: bytearray):
-        result = ckb.molecule.decode_dynvec(data)
-        return CellOutput(
-            ckb.molecule.U64.molecule_decode(result[0]),
-            Script.molecule_decode(result[1]),
-            Script.molecule_decode(result[2]) if result[2] else None
-        )
+    def json_decode(data: dict):
+        capacity = int(data['capacity'], 16)
+        lock = Script.json_decode(data['lock'])
+        type = Script.json_decode(data['type']) if data['type'] else None
+        return CellOutput(capacity, lock, type)
 
     def molecule(self):
         return ckb.molecule.encode_dynvec([
@@ -311,18 +321,13 @@ class CellOutput:
         ])
 
     @staticmethod
-    def json_decode(data: dict):
-        capacity = int(data['capacity'], 16)
-        lock = Script.json_decode(data['lock'])
-        type = Script.json_decode(data['type']) if data['type'] else None
-        return CellOutput(capacity, lock, type)
-
-    def json(self):
-        return {
-            'capacity': hex(self.capacity),
-            'lock': self.lock.json(),
-            'type': self.type.json() if self.type else None
-        }
+    def molecule_decode(data: bytearray):
+        result = ckb.molecule.decode_dynvec(data)
+        return CellOutput(
+            ckb.molecule.U64.molecule_decode(result[0]),
+            Script.molecule_decode(result[1]),
+            Script.molecule_decode(result[2]) if result[2] else None
+        )
 
 
 class CellDep:
@@ -340,6 +345,34 @@ class CellDep:
         ])
 
     @staticmethod
+    def conf_decode(data: dict):
+        return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
+
+    def json(self):
+        return {
+            'out_point': self.out_point.json(),
+            'dep_type': {
+                0: 'code',
+                1: 'dep_group',
+            }[self.dep_type]
+        }
+
+    @staticmethod
+    def json_decode(data: dict):
+        out_point = OutPoint.json_decode(data['out_point'])
+        dep_type = {
+            'code': 0,
+            'dep_group': 1
+        }[data['dep_type']]
+        return CellDep(out_point, dep_type)
+
+    def molecule(self):
+        return ckb.molecule.encode_seq([
+            self.out_point.molecule(),
+            ckb.molecule.Byte(self.dep_type).molecule(),
+        ])
+
+    @staticmethod
     def molecule_decode(data: bytearray):
         result = ckb.molecule.decode_seq(data, [
             OutPoint.molecule_size(),
@@ -353,34 +386,6 @@ class CellDep:
     @staticmethod
     def molecule_size():
         return OutPoint.molecule_size() + ckb.molecule.Byte.molecule_size()
-
-    def molecule(self):
-        return ckb.molecule.encode_seq([
-            self.out_point.molecule(),
-            ckb.molecule.Byte(self.dep_type).molecule(),
-        ])
-
-    @staticmethod
-    def json_decode(data: dict):
-        out_point = OutPoint.json_decode(data['out_point'])
-        dep_type = {
-            'code': 0,
-            'dep_group': 1
-        }[data['dep_type']]
-        return CellDep(out_point, dep_type)
-
-    def json(self):
-        return {
-            'out_point': self.out_point.json(),
-            'dep_type': {
-                0: 'code',
-                1: 'dep_group',
-            }[self.dep_type]
-        }
-
-    @staticmethod
-    def conf_decode(data: dict):
-        return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
 
 
 class TransactionRaw:
@@ -413,17 +418,28 @@ class TransactionRaw:
             self.outputs_data == other.outputs_data,
         ])
 
+    def hash(self):
+        return hash(self.molecule())
+
+    def json(self):
+        return {
+            'version': hex(self.version),
+            'cell_deps': [e.json() for e in self.cell_deps],
+            'header_deps': ['0x' + e.hex() for e in self.header_deps],
+            'inputs': [e.json() for e in self.inputs],
+            'outputs': [e.json() for e in self.outputs],
+            'outputs_data': ['0x' + e.hex() for e in self.outputs_data],
+        }
+
     @staticmethod
-    def molecule_decode(data: bytearray):
-        result = ckb.molecule.decode_dynvec(data)
-        return TransactionRaw(
-            ckb.molecule.U32.molecule_decode(result[0]),
-            [CellDep.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[1])],
-            [ckb.molecule.Byte32.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[2])],
-            [CellInput.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[3])],
-            [CellOutput.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[4])],
-            [ckb.molecule.Bytes.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[5])]
-        )
+    def json_decode(data: dict):
+        version = int(data['version'], 16)
+        cell_deps = [CellDep.json_decode(e) for e in data['cell_deps']]
+        header_deps = [bytearray.fromhex(e[2:]) for e in data['header_deps']]
+        inputs = [CellInput.json_decode(e) for e in data['inputs']]
+        outputs = [CellOutput.json_decode(e) for e in data['outputs']]
+        outputs_data = [bytearray.fromhex(e[2:]) for e in data['outputs_data']]
+        return TransactionRaw(version, cell_deps, header_deps, inputs, outputs, outputs_data)
 
     def molecule(self):
         return ckb.molecule.encode_dynvec([
@@ -436,27 +452,16 @@ class TransactionRaw:
         ])
 
     @staticmethod
-    def json_decode(data: dict):
-        version = int(data['version'], 16)
-        cell_deps = [CellDep.json_decode(e) for e in data['cell_deps']]
-        header_deps = [bytearray.fromhex(e[2:]) for e in data['header_deps']]
-        inputs = [CellInput.json_decode(e) for e in data['inputs']]
-        outputs = [CellOutput.json_decode(e) for e in data['outputs']]
-        outputs_data = [bytearray.fromhex(e[2:]) for e in data['outputs_data']]
-        return TransactionRaw(version, cell_deps, header_deps, inputs, outputs, outputs_data)
-
-    def json(self):
-        return {
-            'version': hex(self.version),
-            'cell_deps': [e.json() for e in self.cell_deps],
-            'header_deps': ['0x' + e.hex() for e in self.header_deps],
-            'inputs': [e.json() for e in self.inputs],
-            'outputs': [e.json() for e in self.outputs],
-            'outputs_data': ['0x' + e.hex() for e in self.outputs_data],
-        }
-
-    def hash(self):
-        return hash(self.molecule())
+    def molecule_decode(data: bytearray):
+        result = ckb.molecule.decode_dynvec(data)
+        return TransactionRaw(
+            ckb.molecule.U32.molecule_decode(result[0]),
+            [CellDep.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[1])],
+            [ckb.molecule.Byte32.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[2])],
+            [CellInput.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[3])],
+            [CellOutput.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[4])],
+            [ckb.molecule.Bytes.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[5])]
+        )
 
 
 class Transaction:
@@ -473,13 +478,16 @@ class Transaction:
             self.witnesses == other.witnesses,
         ])
 
+    def json(self):
+        r = self.raw.json()
+        r['witnesses'] = [f'0x{e.hex()}' for e in self.witnesses]
+        return r
+
     @staticmethod
-    def molecule_decode(data: bytearray):
-        result = ckb.molecule.decode_dynvec(data)
-        return Transaction(
-            TransactionRaw.molecule_decode(result[0]),
-            [ckb.molecule.Bytes.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[1])],
-        )
+    def json_decode(data: dict):
+        raw = TransactionRaw.json_decode(data)
+        witnesses = [bytearray.fromhex(e[2:]) for e in data['witnesses']]
+        return Transaction(raw, witnesses)
 
     def molecule(self):
         return ckb.molecule.encode_dynvec([
@@ -488,15 +496,12 @@ class Transaction:
         ])
 
     @staticmethod
-    def json_decode(data: dict):
-        raw = TransactionRaw.json_decode(data)
-        witnesses = [bytearray.fromhex(e[2:]) for e in data['witnesses']]
-        return Transaction(raw, witnesses)
-
-    def json(self):
-        r = self.raw.json()
-        r['witnesses'] = [f'0x{e.hex()}' for e in self.witnesses]
-        return r
+    def molecule_decode(data: bytearray):
+        result = ckb.molecule.decode_dynvec(data)
+        return Transaction(
+            TransactionRaw.molecule_decode(result[0]),
+            [ckb.molecule.Bytes.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[1])],
+        )
 
 
 def epoch_encode(e: int, i: int, l: int) -> int:
@@ -529,14 +534,12 @@ class WitnessArgs:
             self.output_type == other.output_type,
         ])
 
-    @staticmethod
-    def molecule_decode(data: bytearray):
-        result = ckb.molecule.decode_dynvec(data)
-        return WitnessArgs(
-            ckb.molecule.Bytes.molecule_decode(result[0]) if result[0] else None,
-            ckb.molecule.Bytes.molecule_decode(result[1]) if result[1] else None,
-            ckb.molecule.Bytes.molecule_decode(result[2]) if result[2] else None,
-        )
+    def json(self):
+        return {
+            'lock': f'0x{self.lock.hex()}' if self.lock else None,
+            'input_type': f'0x{self.input_type.hex()}' if self.input_type else None,
+            'output_type': f'0x{self.output_type.hex()}' if self.output_type else None,
+        }
 
     def molecule(self):
         return ckb.molecule.encode_dynvec([
@@ -545,9 +548,11 @@ class WitnessArgs:
             ckb.molecule.Bytes(self.output_type).molecule() if self.output_type else bytearray(),
         ])
 
-    def json(self):
-        return {
-            'lock': f'0x{self.lock.hex()}' if self.lock else None,
-            'input_type': f'0x{self.input_type.hex()}' if self.input_type else None,
-            'output_type': f'0x{self.output_type.hex()}' if self.output_type else None,
-        }
+    @staticmethod
+    def molecule_decode(data: bytearray):
+        result = ckb.molecule.decode_dynvec(data)
+        return WitnessArgs(
+            ckb.molecule.Bytes.molecule_decode(result[0]) if result[0] else None,
+            ckb.molecule.Bytes.molecule_decode(result[1]) if result[1] else None,
+            ckb.molecule.Bytes.molecule_decode(result[2]) if result[2] else None,
+        )

@@ -4,7 +4,7 @@ import ckb
 def test_addr():
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
-    args = ckb.core.hash(pubkey.molecule())[:20]
+    args = ckb.core.hash(pubkey.sec())[:20]
     script = ckb.core.Script(
         ckb.config.current.script.secp256k1_blake160.code_hash,
         ckb.config.current.script.secp256k1_blake160.hash_type,
@@ -28,14 +28,14 @@ def test_pubkey():
     pubkey = prikey.pubkey()
     assert pubkey.x == 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
     assert pubkey.y == 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
-    assert pubkey.molecule().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
-    assert ckb.core.PubKey.molecule_decode(pubkey.molecule()) == pubkey
+    assert pubkey.sec().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
+    assert ckb.core.PubKey.sec_decode(pubkey.sec()) == pubkey
 
 
 def test_pubkey_hash():
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
-    assert ckb.core.hash(pubkey.molecule())[:20].hex() == '75178f34549c5fe9cd1a0c57aebd01e7ddf9249e'
+    assert ckb.core.hash(pubkey.sec())[:20].hex() == '75178f34549c5fe9cd1a0c57aebd01e7ddf9249e'
 
 
 def test_script():
