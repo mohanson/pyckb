@@ -24,7 +24,7 @@ if args.file:
     tx_json = json.load(open(args.file))
 if args.hash:
     tx_json = ckb.rpc.get_transaction(args.hash)['transaction']
-tx = ckb.core.Transaction.json_read(tx_json)
+tx = ckb.core.Transaction.json_decode(tx_json)
 
 tx_mock = {
     'mock_info': {
@@ -37,7 +37,7 @@ tx_mock = {
 
 for i in tx.raw.inputs:
     i_tx_rpc = ckb.rpc.get_transaction(f'0x{i.previous_output.tx_hash.hex()}')
-    i_tx = ckb.core.Transaction.json_read(i_tx_rpc['transaction'])
+    i_tx = ckb.core.Transaction.json_decode(i_tx_rpc['transaction'])
     i_output = i_tx.raw.outputs[i.previous_output.index]
     i_data = i_tx.raw.outputs_data[i.previous_output.index]
     i_header = i_tx_rpc['tx_status']['block_hash']
@@ -49,7 +49,7 @@ for i in tx.raw.inputs:
     })
 for c in tx.raw.cell_deps:
     c_tx_rpc = ckb.rpc.get_transaction(f'0x{c.out_point.tx_hash.hex()}')
-    c_tx = ckb.core.Transaction.json_read(c_tx_rpc['transaction'])
+    c_tx = ckb.core.Transaction.json_decode(c_tx_rpc['transaction'])
     c_output = c_tx.raw.outputs[c.out_point.index]
     c_data = c_tx.raw.outputs_data[c.out_point.index]
     c_header = c_tx_rpc['tx_status']['block_hash']
@@ -62,9 +62,9 @@ for c in tx.raw.cell_deps:
     if c.dep_type != 1:
         continue
     for e in ckb.molecule.decode_fixvec(c_data):
-        o = ckb.core.OutPoint.molecule_read(e)
+        o = ckb.core.OutPoint.molecule_decode(e)
         o_tx_rpc = ckb.rpc.get_transaction(f'0x{o.tx_hash.hex()}')
-        o_tx = ckb.core.Transaction.json_read(o_tx_rpc['transaction'])
+        o_tx = ckb.core.Transaction.json_decode(o_tx_rpc['transaction'])
         o_output = o_tx.raw.outputs[o.index]
         o_data = o_tx.raw.outputs_data[o.index]
         o_header = o_tx_rpc['tx_status']['block_hash']

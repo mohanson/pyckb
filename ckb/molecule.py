@@ -73,7 +73,7 @@ class Byte:
         return self.data == other.data
 
     @staticmethod
-    def molecule_read(data: bytearray):
+    def molecule_decode(data: bytearray):
         assert len(data) == 1
         return data[0]
 
@@ -94,7 +94,7 @@ class Byte32:
         return self.data == other.data
 
     @staticmethod
-    def molecule_read(data: bytearray):
+    def molecule_decode(data: bytearray):
         return data
 
     @staticmethod
@@ -113,7 +113,7 @@ class Bytes:
         return self.data == other.data
 
     @staticmethod
-    def molecule_read(data: bytearray):
+    def molecule_decode(data: bytearray):
         l = int.from_bytes(data[:4], 'little')
         assert l == len(data) - 4
         return data[4:]
@@ -134,7 +134,7 @@ class U32:
         return self.data == other.data
 
     @staticmethod
-    def molecule_read(data: bytearray):
+    def molecule_decode(data: bytearray):
         return int.from_bytes(data, 'little')
 
     @staticmethod
@@ -154,7 +154,7 @@ class U64:
         return self.data == other.data
 
     @staticmethod
-    def molecule_read(data: bytearray):
+    def molecule_decode(data: bytearray):
         return int.from_bytes(data, 'little')
 
     @staticmethod

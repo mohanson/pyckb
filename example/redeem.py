@@ -21,7 +21,7 @@ if args.net == 'testnet':
 user = ckb.wallet.Wallet(int(args.prikey, 0))
 for e in user.dao_livecell():
     if e['output_data'] == '0x0000000000000000':
-        out_point = ckb.core.OutPoint.json_read(e['out_point'])
+        out_point = ckb.core.OutPoint.json_decode(e['out_point'])
         hash = user.dao_prepare(out_point)
         ckb.rpc.wait(f'0x{hash.hex()}')
         print(f'0x{hash.hex()}')
@@ -40,7 +40,7 @@ for e in user.dao_livecell():
         current_block_epoch_float = current_block_epoch[0] + current_block_epoch[1] / current_block_epoch[2]
         if current_block_epoch_float < extract_since_epoch_float:
             break
-        out_point = ckb.core.OutPoint.json_read(e['out_point'])
+        out_point = ckb.core.OutPoint.json_decode(e['out_point'])
         hash = user.dao_extract(out_point)
         ckb.rpc.wait(f'0x{hash.hex()}')
         print(f'0x{hash.hex()}')

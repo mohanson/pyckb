@@ -14,7 +14,7 @@ def test_addr():
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
     assert ckb.core.address_decode(addr) == script
     assert script.hash().hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
-    assert ckb.core.Script.molecule_read(script.molecule()) == script
+    assert ckb.core.Script.molecule_decode(script.molecule()) == script
 
 
 def test_epoch():
@@ -29,7 +29,7 @@ def test_pubkey():
     assert pubkey.x == 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
     assert pubkey.y == 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
     assert pubkey.molecule().hex() == '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
-    assert ckb.core.PubKey.molecule_read(pubkey.molecule()) == pubkey
+    assert ckb.core.PubKey.molecule_decode(pubkey.molecule()) == pubkey
 
 
 def test_pubkey_hash():
@@ -44,7 +44,7 @@ def test_script():
         ckb.config.current.script.secp256k1_blake160.hash_type,
         bytearray([0x00, 0x01, 0x02, 0x03])
     )
-    assert ckb.core.Script.molecule_read(script.molecule()) == script
+    assert ckb.core.Script.molecule_decode(script.molecule()) == script
 
 
 def test_sign():
@@ -58,4 +58,4 @@ def test_witness_args():
         bytearray([0x00, 0x01, 0x02, 0x03]),
         None,
     )
-    assert ckb.core.WitnessArgs.molecule_read(witness_args.molecule()) == witness_args
+    assert ckb.core.WitnessArgs.molecule_decode(witness_args.molecule()) == witness_args

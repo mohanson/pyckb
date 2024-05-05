@@ -17,7 +17,7 @@ class WalletTransactionAnalyzer:
         for e in self.tx.raw.inputs:
             out_point = e.previous_output
             result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-            origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+            origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
             sender_capacity += origin.capacity
         for e in self.tx.raw.outputs:
             output_capacity += e.capacity
@@ -113,14 +113,14 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray())
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -148,12 +148,12 @@ class Wallet:
         accept_capacity = 0
         accept_script = script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -179,14 +179,14 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -216,14 +216,14 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -249,7 +249,7 @@ class Wallet:
 
     def script_update_type_id(self, script: ckb.core.Script, data: bytearray, out_point: ckb.core.OutPoint):
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-        origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+        origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == ckb.core.type_id_code_hash
         assert origin.type.hash_type == ckb.core.type_id_hash_type
         sender_capacity = origin.capacity
@@ -259,7 +259,7 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.inputs.append(ckb.core.CellInput(0, out_point))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
@@ -267,7 +267,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -304,15 +304,15 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray([0] * 8))
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -338,7 +338,7 @@ class Wallet:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         number = int(ckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
-        origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+        origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
@@ -349,8 +349,8 @@ class Wallet:
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(bytearray.fromhex(result['tx_status']['block_hash'][2:]))
         tx.raw.inputs.append(ckb.core.CellInput(0, out_point))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
@@ -359,7 +359,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
-            cell_out_point = ckb.core.OutPoint.json_read(cell['out_point'])
+            cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = ckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -384,7 +384,7 @@ class Wallet:
     def dao_extract(self, out_point: ckb.core.OutPoint):
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-        origin = ckb.core.CellOutput.json_read(result['transaction']['outputs'][out_point.index])
+        origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == ckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == ckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
@@ -412,8 +412,8 @@ class Wallet:
         accept_capacity = 0
         accept_script = self.script
         tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.secp256k1_blake160.cell_dep))
-        tx.raw.cell_deps.append(ckb.core.CellDep.conf_read(ckb.config.current.script.dao.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
+        tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(deposit_block_hash)
         tx.raw.header_deps.append(prepare_block_hash)
         tx.raw.inputs.append(ckb.core.CellInput(extract_since, out_point))
