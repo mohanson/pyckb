@@ -1,4 +1,4 @@
-import ckb.bech32m
+import ckb.bech32
 import ckb.config
 import ckb.ecdsa
 import ckb.molecule
@@ -172,15 +172,11 @@ def address_encode(script: Script) -> str:
     payload.extend(script.code_hash)
     payload.append(script.hash_type)
     payload.extend(script.args)
-    return ckb.bech32m.bech32m_encode(
-        ckb.config.current.hrp,
-        ckb.bech32m.bech32m_re_arrange_5(payload),
-    )
+    return ckb.bech32.encode(ckb.config.current.hrp, payload)
 
 
 def address_decode(addr: str) -> Script:
-    _, data = ckb.bech32m.bech32m_decode(addr)
-    payload = bytearray(ckb.bech32m.bech32m_re_arrange_8(data))
+    payload = ckb.bech32.decode(ckb.config.current.hrp, addr)
     assert payload[0] == 0
     code_hash = payload[1:33]
     hash_type = payload[33]

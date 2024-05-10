@@ -1,4 +1,4 @@
-from . import bech32m
+from . import bech32
 from . import config
 from . import core
 from . import denomination
