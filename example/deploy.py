@@ -31,3 +31,4 @@ with open(args.file, 'rb') as f:
     hash = user.script_deploy(hole, data)
     print(f'out_point.hash   = 0x{hash.hex()}')
     print(f'out_point.index  = 0')
+    ckb.rpc.wait(f'0x{hash.hex()}')

@@ -9,7 +9,7 @@ import time
 # specified user, breaking through the single address limit of the faucet.
 #
 # https://faucet.nervos.org/
-
+ckb.config.current = ckb.config.testnet
 parser = argparse.ArgumentParser()
 parser.add_argument('--addr', type=str, required=True, help='ckb address')
 args = parser.parse_args()
@@ -37,6 +37,8 @@ for _ in itertools.repeat(0):
         continue
     break
 
+print(f'hash: {hash}')
 ckb.rpc.wait(hash)
 hash = kana.transfer_all(ckb.core.address_decode(args.addr))
+print(f'hash: 0x{hash.hex()}')
 ckb.rpc.wait(f'0x{hash.hex()}')

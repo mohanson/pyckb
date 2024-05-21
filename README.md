@@ -26,7 +26,7 @@ By default, pyckb is configured on the develop. To switch networks, see `ckb.con
 Calculate address from private key in secp256k1 lock.
 
 ```sh
-$ python example/addr.py --prikey 0x0000000000000000000000000000000000000000000000000000000000000001
+$ python example/addr.py --prikey 1
 
 # ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40
 ```
@@ -46,7 +46,7 @@ $ python example/capacity.py --addr ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr
 Deploy a script to the chain.
 
 ```sh
-$ python example/deploy.py --prikey 0x0000000000000000000000000000000000000000000000000000000000000001 --file LICENSE
+$ python example/deploy.py --prikey 1 --file LICENSE
 
 # script.code_hash = 0x1a124d54d4f37713b8f17fc12142ede488906d4290fbb178d7aad214977814ee
 # script.hash_type = 2(data1)
@@ -67,7 +67,7 @@ $ python example/faucet.py --addr ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0v
 Attempt to withdraw all funds from Dao. When running the test case of pyckb by `pytest -v`, a part of ckb will be locked in Dao. Use this script to recover this part of the funds.
 
 ```sh
-$ python example/redeem.py --prikey 0x0000000000000000000000000000000000000000000000000000000000000001
+$ python example/redeem.py --prikey 1
 ```
 
 **example/txdump.py**
