@@ -5,13 +5,14 @@ import ckb.rpc
 import itertools
 import json
 import math
+import typing
 
 
 class WalletTransactionAnalyzer:
-    def __init__(self, tx: ckb.core.Transaction):
+    def __init__(self, tx: ckb.core.Transaction) -> None:
         self.tx = tx
 
-    def analyze_mining_fee(self):
+    def analyze_mining_fee(self) -> None:
         # Make sure the transaction fee is less than 1 CKB. This is a rough check, but works well in most cases.
         sender_capacity = 0
         output_capacity = 0
@@ -24,10 +25,10 @@ class WalletTransactionAnalyzer:
             output_capacity += e.capacity
         assert sender_capacity - output_capacity <= 1 * ckb.denomination.ckbytes
 
-    def analyze_outputs_data(self):
+    def analyze_outputs_data(self) -> None:
         assert len(self.tx.raw.outputs) == len(self.tx.raw.outputs_data)
 
-    def analyze_since(self):
+    def analyze_since(self) -> None:
         # Transaction since precondition
         # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0017-tx-valid-since/0017-tx-valid-since.md
         for e in self.tx.raw.inputs:
@@ -51,14 +52,14 @@ class WalletTransactionAnalyzer:
             if e.since >> 56 == 0xe0:
                 pass
 
-    def analyze(self):
+    def analyze(self) -> None:
         self.analyze_mining_fee()
         self.analyze_outputs_data()
         self.analyze_since()
 
 
 class Wallet:
-    def __init__(self, prikey: int):
+    def __init__(self, prikey: int) -> None:
         self.prikey = ckb.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
         self.script = ckb.core.Script(
@@ -68,10 +69,10 @@ class Wallet:
         )
         self.addr = ckb.core.address_encode(self.script)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return all([
             self.prikey == other.prikey,
             self.pubkey == other.pubkey,
@@ -79,7 +80,7 @@ class Wallet:
             self.addr == other.addr,
         ])
 
-    def json(self):
+    def json(self) -> typing.Dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
@@ -87,7 +88,7 @@ class Wallet:
             'addr': self.addr,
         }
 
-    def livecell(self):
+    def livecell(self) -> typing.Generator:
         return ckb.rpc.get_cells_iter({
             'script': self.script.json(),
             'script_type': 'lock',
@@ -96,7 +97,7 @@ class Wallet:
             }
         })
 
-    def capacity(self):
+    def capacity(self) -> int:
         return int(ckb.rpc.get_cells_capacity({
             'script': self.script.json(),
             'script_type': 'lock',
@@ -105,7 +106,7 @@ class Wallet:
             }
         })['capacity'], 16)
 
-    def transfer(self, script: ckb.core.Script, capacity: int):
+    def transfer(self, script: ckb.core.Script, capacity: int) -> bytearray:
         assert capacity >= 61 * ckb.denomination.ckbytes
         assert self.capacity() > capacity
         sender_capacity = 0
@@ -143,7 +144,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def transfer_all(self, script: ckb.core.Script):
+    def transfer_all(self, script: ckb.core.Script) -> bytearray:
         assert self.capacity() > 0
         sender_capacity = 0
         accept_capacity = 0
@@ -173,7 +174,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def script_deploy(self, script: ckb.core.Script, data: bytearray):
+    def script_deploy(self, script: ckb.core.Script, data: bytearray) -> bytearray:
         sender_capacity = 0
         accept_capacity = (61 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
@@ -209,7 +210,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def script_deploy_type_id(self, script: ckb.core.Script, data: bytearray):
+    def script_deploy_type_id(self, script: ckb.core.Script, data: bytearray) -> bytearray:
         sender_capacity = 0
         accept_capacity = (126 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
@@ -248,7 +249,12 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def script_update_type_id(self, script: ckb.core.Script, data: bytearray, out_point: ckb.core.OutPoint):
+    def script_update_type_id(
+        self,
+        script: ckb.core.Script,
+        data: bytearray,
+        out_point: ckb.core.OutPoint
+    ) -> bytearray:
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == ckb.core.type_id_code_hash
@@ -290,7 +296,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json(), 'passthrough')
         return bytearray.fromhex(hash[2:])
 
-    def dao_deposit(self, capacity: int):
+    def dao_deposit(self, capacity: int) -> bytearray:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
         assert capacity >= 102 * ckb.denomination.ckbytes
         assert self.capacity() > capacity
@@ -335,7 +341,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def dao_prepare(self, out_point: ckb.core.OutPoint):
+    def dao_prepare(self, out_point: ckb.core.OutPoint) -> bytearray:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         number = int(ckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
@@ -382,7 +388,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def dao_extract(self, out_point: ckb.core.OutPoint):
+    def dao_extract(self, out_point: ckb.core.OutPoint) -> bytearray:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
         result = ckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = ckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
@@ -435,7 +441,7 @@ class Wallet:
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
-    def dao_livecell(self):
+    def dao_livecell(self) -> typing.Generator:
         return ckb.rpc.get_cells_iter({
             'script': self.script.json(),
             'script_type': 'lock',
@@ -448,7 +454,7 @@ class Wallet:
             },
         })
 
-    def dao_capacity(self):
+    def dao_capacity(self) -> int:
         return int(ckb.rpc.get_cells_capacity({
             'script': self.script.json(),
             'script_type': 'lock',

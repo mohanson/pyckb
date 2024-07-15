@@ -1,7 +1,9 @@
 # Doc: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0008-serialization/0008-serialization.md
+import typing
+Self = typing.Self
 
 
-def decode_dynvec(data: bytearray):
+def decode_dynvec(data: bytearray) -> typing.List[bytearray]:
     assert len(data) >= 4
     assert len(data) == int.from_bytes(data[0:4], 'little')
     nums = int.from_bytes(data[4:8], 'little') // 4 - 1
@@ -15,7 +17,7 @@ def decode_dynvec(data: bytearray):
     return body
 
 
-def decode_fixvec(data: bytearray):
+def decode_fixvec(data: bytearray) -> typing.List[bytearray]:
     assert len(data) >= 4
     icnt = int.from_bytes(data[0:4], 'little')
     body = []
@@ -26,7 +28,7 @@ def decode_fixvec(data: bytearray):
     return body
 
 
-def decode_seq(data: bytearray, size: list[int]):
+def decode_seq(data: bytearray, size: list[int]) -> typing.List[bytearray]:
     r = []
     s = 0
     for n in size:
@@ -35,7 +37,7 @@ def decode_seq(data: bytearray, size: list[int]):
     return r
 
 
-def encode_dynvec(data: list[bytearray]):
+def encode_dynvec(data: list[bytearray]) -> bytearray:
     head = bytearray()
     body = bytearray()
     head_size = 4 + 4 * len(data)
@@ -49,7 +51,7 @@ def encode_dynvec(data: list[bytearray]):
     return bytearray(size.to_bytes(4, 'little')) + head + body
 
 
-def encode_fixvec(data: list[bytearray]):
+def encode_fixvec(data: list[bytearray]) -> bytearray:
     r = bytearray()
     r.extend(len(data).to_bytes(4, 'little'))
     for e in data:
@@ -57,7 +59,7 @@ def encode_fixvec(data: list[bytearray]):
     return r
 
 
-def encode_seq(data: list[bytearray]):
+def encode_seq(data: list[bytearray]) -> bytearray:
     r = bytearray()
     for e in data:
         r.extend(e)
@@ -65,101 +67,101 @@ def encode_seq(data: list[bytearray]):
 
 
 class Byte:
-    def __init__(self, data: int):
+    def __init__(self, data: int) -> None:
         assert 0 <= data and data <= 0xff
         self.data = data
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.data == other.data
 
-    def molecule(self):
+    def molecule(self) -> bytearray:
         return bytearray([self.data])
 
     @staticmethod
-    def molecule_decode(data: bytearray):
+    def molecule_decode(data: bytearray) -> int:
         assert len(data) == 1
         return data[0]
 
     @staticmethod
-    def molecule_size():
+    def molecule_size() -> int:
         return 1
 
 
 class Byte32:
-    def __init__(self, data: bytearray):
+    def __init__(self, data: bytearray) -> None:
         assert len(data) == 32
         self.data = data
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.data == other.data
 
-    def molecule(self):
+    def molecule(self) -> bytearray:
         return self.data
 
     @staticmethod
-    def molecule_decode(data: bytearray):
+    def molecule_decode(data: bytearray) -> bytearray:
         return data
 
     @staticmethod
-    def molecule_size():
+    def molecule_size() -> int:
         return 32
 
 
 class Bytes:
-    def __init__(self, data: bytearray):
+    def __init__(self, data: bytearray) -> None:
         self.data = data
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.data == other.data
 
-    def molecule(self):
+    def molecule(self) -> bytearray:
         r = bytearray()
         r.extend(len(self.data).to_bytes(4, 'little'))
         r.extend(self.data)
         return r
 
     @staticmethod
-    def molecule_decode(data: bytearray):
+    def molecule_decode(data: bytearray) -> bytearray:
         l = int.from_bytes(data[:4], 'little')
         assert l == len(data) - 4
         return data[4:]
 
 
 class U32:
-    def __init__(self, data: int):
+    def __init__(self, data: int) -> None:
         assert 0 <= data and data <= 0xffffffff
         self.data = data
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.data == other.data
 
-    def molecule(self):
+    def molecule(self) -> bytearray:
         return self.data.to_bytes(4, 'little')
 
     @staticmethod
-    def molecule_decode(data: bytearray):
+    def molecule_decode(data: bytearray) -> int:
         return int.from_bytes(data, 'little')
 
     @staticmethod
-    def molecule_size():
+    def molecule_size() -> int:
         return 4
 
 
 class U64:
-    def __init__(self, data: int):
+    def __init__(self, data: int) -> None:
         assert 0 <= data and data <= 0xffffffffffffffff
         self.data = data
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.data == other.data
 
-    def molecule(self):
+    def molecule(self) -> bytearray:
         return self.data.to_bytes(8, 'little')
 
     @staticmethod
-    def molecule_decode(data: bytearray):
+    def molecule_decode(data: bytearray) -> int:
         return int.from_bytes(data, 'little')
 
     @staticmethod
-    def molecule_size():
+    def molecule_size() -> int:
         return 8
