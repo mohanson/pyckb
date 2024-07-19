@@ -77,6 +77,7 @@ class PubKey:
     def pt(self) -> ckb.secp256k1.Pt:
         return ckb.secp256k1.Pt(ckb.secp256k1.Fq(self.x), ckb.secp256k1.Fq(self.y))
 
+    @staticmethod
     def pt_decode(data: ckb.secp256k1.Pt):
         return PubKey(data.x.x, data.y.x)
 
