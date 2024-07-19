@@ -74,6 +74,12 @@ class PubKey:
             'y': f'0x{self.y:064x}'
         }
 
+    def pt(self) -> ckb.secp256k1.Pt:
+        return ckb.secp256k1.Pt(ckb.secp256k1.Fq(self.x), ckb.secp256k1.Fq(self.y))
+
+    def pt_decode(data: ckb.secp256k1.Pt):
+        return PubKey(data.x.x, data.y.x)
+
     def sec(self) -> bytearray:
         # The Standards of Efficient Cryptography (SEC) encoding is used to serialize ECDSA public keys. Public keys in
         # Bitcoin are ECDSA points consisting of two coordinates (x,y). x and y may be smaller than 32 bytes in which
