@@ -77,13 +77,13 @@ class Byte:
     def molecule(self) -> bytearray:
         return bytearray([self.data])
 
-    @staticmethod
-    def molecule_decode(data: bytearray) -> int:
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> int:
         assert len(data) == 1
         return data[0]
 
-    @staticmethod
-    def molecule_size() -> int:
+    @classmethod
+    def molecule_size(cls) -> int:
         return 1
 
 
@@ -98,12 +98,12 @@ class Byte32:
     def molecule(self) -> bytearray:
         return self.data
 
-    @staticmethod
-    def molecule_decode(data: bytearray) -> bytearray:
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> bytearray:
         return data
 
-    @staticmethod
-    def molecule_size() -> int:
+    @classmethod
+    def molecule_size(cls) -> int:
         return 32
 
 
@@ -120,8 +120,8 @@ class Bytes:
         r.extend(self.data)
         return r
 
-    @staticmethod
-    def molecule_decode(data: bytearray) -> bytearray:
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> bytearray:
         l = int.from_bytes(data[:4], 'little')
         assert l == len(data) - 4
         return data[4:]
@@ -138,12 +138,12 @@ class U32:
     def molecule(self) -> bytearray:
         return self.data.to_bytes(4, 'little')
 
-    @staticmethod
-    def molecule_decode(data: bytearray) -> int:
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> int:
         return int.from_bytes(data, 'little')
 
-    @staticmethod
-    def molecule_size() -> int:
+    @classmethod
+    def molecule_size(cls) -> int:
         return 4
 
 
@@ -158,10 +158,10 @@ class U64:
     def molecule(self) -> bytearray:
         return self.data.to_bytes(8, 'little')
 
-    @staticmethod
-    def molecule_decode(data: bytearray) -> int:
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> int:
         return int.from_bytes(data, 'little')
 
-    @staticmethod
-    def molecule_size() -> int:
+    @classmethod
+    def molecule_size(cls) -> int:
         return 8
