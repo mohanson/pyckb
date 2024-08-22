@@ -31,6 +31,13 @@ def test_get_current_epoch():
     assert int(ckb.rpc.get_current_epoch()['number'], 0) >= 0
 
 
+def test_get_header_by_number():
+    header_json = ckb.rpc.get_header_by_number('0x1')
+    header = ckb.core.Header.json_decode(header_json)
+    assert header.raw.number == 1
+    assert header.hash() == bytearray.fromhex(header_json['hash'][2:])
+
+
 def test_get_indexer_tip():
     assert int(ckb.rpc.get_indexer_tip()['block_number'], 16) >= 0
 

@@ -114,7 +114,7 @@ class Wallet:
         accept_script = script
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
@@ -149,7 +149,7 @@ class Wallet:
         sender_capacity = 0
         accept_capacity = 0
         accept_script = script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
@@ -180,7 +180,7 @@ class Wallet:
         accept_script = script
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
@@ -217,7 +217,7 @@ class Wallet:
         accept_typeid = ckb.core.Script(ckb.core.type_id_code_hash, ckb.core.type_id_hash_type, bytearray([0] * 32))
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
@@ -265,7 +265,7 @@ class Wallet:
         accept_typeid = origin.type
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.inputs.append(ckb.core.CellInput(0, out_point))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
@@ -293,7 +293,7 @@ class Wallet:
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = ckb.rpc.send_transaction(tx.json(), 'passthrough')
+        hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
 
     def dao_deposit(self, capacity: int) -> bytearray:
@@ -310,7 +310,7 @@ class Wallet:
         )
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
@@ -355,7 +355,7 @@ class Wallet:
         accept_typeid = origin.type
         change_capacity = 0
         change_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(bytearray.fromhex(result['tx_status']['block_hash'][2:]))
@@ -418,7 +418,7 @@ class Wallet:
         sender_capacity = (origin.capacity - occupy_capacity) * prepare_dao_ar // deposit_dao_ar + occupy_capacity
         accept_capacity = 0
         accept_script = self.script
-        tx = ckb.core.Transaction(ckb.core.TransactionRaw(0, [], [], [], [], []), [])
+        tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.header_deps.append(deposit_block_hash)
