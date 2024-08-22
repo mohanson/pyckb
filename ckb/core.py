@@ -25,7 +25,7 @@ class PriKey:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return self.n == other.n
 
     def json(self) -> typing.Dict:
@@ -62,7 +62,7 @@ class PubKey:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.x == other.x,
             self.y == other.y,
@@ -119,7 +119,7 @@ class Script:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.code_hash == other.code_hash,
             self.hash_type == other.hash_type,
@@ -132,24 +132,17 @@ class Script:
     def json(self) -> typing.Dict:
         return {
             'code_hash': f'0x{self.code_hash.hex()}',
-            'hash_type': {
-                0: 'data',
-                1: 'type',
-                2: 'data1',
-            }[self.hash_type],
+            'hash_type': {0: 'data', 1: 'type', 2: 'data1'}[self.hash_type],
             'args': f'0x{self.args.hex()}',
         }
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        code_hash = bytearray.fromhex(data['code_hash'][2:])
-        hash_type = {
-            'data': 0,
-            'type': 1,
-            'data1': 2,
-        }[data['hash_type']]
-        args = bytearray.fromhex(data['args'][2:])
-        return Script(code_hash, hash_type, args)
+        return Script(
+            bytearray.fromhex(data['code_hash'][2:]),
+            {'data': 0, 'type': 1, 'data1': 2}[data['hash_type']],
+            bytearray.fromhex(data['args'][2:]),
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_dynvec([
@@ -198,7 +191,7 @@ class OutPoint:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.tx_hash == other.tx_hash,
             self.index == other.index,
@@ -212,7 +205,10 @@ class OutPoint:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
+        return OutPoint(
+            bytearray.fromhex(data['tx_hash'][2:]),
+            int(data['index'], 16),
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_seq([
@@ -244,7 +240,7 @@ class CellInput:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.since == other.since,
             self.previous_output == other.previous_output,
@@ -258,9 +254,10 @@ class CellInput:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        since = int(data['since'], 16)
-        previous_output = OutPoint.json_decode(data['previous_output'])
-        return CellInput(since, previous_output)
+        return CellInput(
+            int(data['since'], 16),
+            OutPoint.json_decode(data['previous_output']),
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_seq([
@@ -293,7 +290,7 @@ class CellOutput:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.capacity == other.capacity,
             self.lock == other.lock,
@@ -309,10 +306,11 @@ class CellOutput:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        capacity = int(data['capacity'], 16)
-        lock = Script.json_decode(data['lock'])
-        type = Script.json_decode(data['type']) if data['type'] else None
-        return CellOutput(capacity, lock, type)
+        return CellOutput(
+            int(data['capacity'], 16),
+            Script.json_decode(data['lock']),
+            Script.json_decode(data['type']) if data['type'] else None,
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_dynvec([
@@ -339,7 +337,7 @@ class CellDep:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.out_point == other.out_point,
             self.dep_type == other.dep_type,
@@ -352,20 +350,15 @@ class CellDep:
     def json(self) -> typing.Dict:
         return {
             'out_point': self.out_point.json(),
-            'dep_type': {
-                0: 'code',
-                1: 'dep_group',
-            }[self.dep_type]
+            'dep_type': {0: 'code', 1: 'dep_group'}[self.dep_type]
         }
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        out_point = OutPoint.json_decode(data['out_point'])
-        dep_type = {
-            'code': 0,
-            'dep_group': 1
-        }[data['dep_type']]
-        return CellDep(out_point, dep_type)
+        return CellDep(
+            OutPoint.json_decode(data['out_point']),
+            {'code': 0, 'dep_group': 1}[data['dep_type']],
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_seq([
@@ -389,7 +382,7 @@ class CellDep:
         return OutPoint.molecule_size() + ckb.molecule.Byte.molecule_size()
 
 
-class TransactionRaw:
+class RawTransaction:
     def __init__(
         self,
         version: int,
@@ -409,7 +402,7 @@ class TransactionRaw:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.version == other.version,
             self.cell_deps == other.cell_deps,
@@ -434,13 +427,14 @@ class TransactionRaw:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        version = int(data['version'], 16)
-        cell_deps = [CellDep.json_decode(e) for e in data['cell_deps']]
-        header_deps = [bytearray.fromhex(e[2:]) for e in data['header_deps']]
-        inputs = [CellInput.json_decode(e) for e in data['inputs']]
-        outputs = [CellOutput.json_decode(e) for e in data['outputs']]
-        outputs_data = [bytearray.fromhex(e[2:]) for e in data['outputs_data']]
-        return TransactionRaw(version, cell_deps, header_deps, inputs, outputs, outputs_data)
+        return RawTransaction(
+            int(data['version'], 16),
+            [CellDep.json_decode(e) for e in data['cell_deps']],
+            [bytearray.fromhex(e[2:]) for e in data['header_deps']],
+            [CellInput.json_decode(e) for e in data['inputs']],
+            [CellOutput.json_decode(e) for e in data['outputs']],
+            [bytearray.fromhex(e[2:]) for e in data['outputs_data']],
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_dynvec([
@@ -455,7 +449,7 @@ class TransactionRaw:
     @classmethod
     def molecule_decode(cls, data: bytearray) -> Self:
         result = ckb.molecule.decode_dynvec(data)
-        return TransactionRaw(
+        return RawTransaction(
             ckb.molecule.U32.molecule_decode(result[0]),
             [CellDep.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[1])],
             [ckb.molecule.Byte32.molecule_decode(e) for e in ckb.molecule.decode_fixvec(result[2])],
@@ -466,14 +460,14 @@ class TransactionRaw:
 
 
 class Transaction:
-    def __init__(self, raw: TransactionRaw, witnesses: list[bytearray]) -> None:
+    def __init__(self, raw: RawTransaction, witnesses: list[bytearray]) -> None:
         self.raw = raw
         self.witnesses = witnesses
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.raw == other.raw,
             self.witnesses == other.witnesses,
@@ -486,9 +480,10 @@ class Transaction:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        raw = TransactionRaw.json_decode(data)
-        witnesses = [bytearray.fromhex(e[2:]) for e in data['witnesses']]
-        return Transaction(raw, witnesses)
+        return Transaction(
+            RawTransaction.json_decode(data),
+            [bytearray.fromhex(e[2:]) for e in data['witnesses']],
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_dynvec([
@@ -500,7 +495,7 @@ class Transaction:
     def molecule_decode(cls, data: bytearray) -> Self:
         result = ckb.molecule.decode_dynvec(data)
         return Transaction(
-            TransactionRaw.molecule_decode(result[0]),
+            RawTransaction.molecule_decode(result[0]),
             [ckb.molecule.Bytes.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[1])],
         )
 
@@ -528,7 +523,7 @@ class WitnessArgs:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.lock == other.lock,
             self.input_type == other.input_type,
@@ -559,7 +554,7 @@ class WitnessArgs:
         )
 
 
-class HeaderRaw:
+class RawHeader:
     def __init__(
         self,
         version: int,
@@ -587,7 +582,7 @@ class HeaderRaw:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.version == other.version,
             self.compact_target == other.compact_target,
@@ -617,7 +612,7 @@ class HeaderRaw:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        return HeaderRaw(
+        return RawHeader(
             version=int(data['version'], 16),
             compact_target=int(data['compact_target'], 16),
             timestamp=int(data['timestamp'], 16),
@@ -658,7 +653,7 @@ class HeaderRaw:
             ckb.molecule.Byte32.molecule_size(),
             ckb.molecule.Byte32.molecule_size(),
         ])
-        return HeaderRaw(
+        return RawHeader(
             ckb.molecule.U32.molecule_decode(result[0]),
             ckb.molecule.U32.molecule_decode(result[1]),
             ckb.molecule.U64.molecule_decode(result[2]),
@@ -688,14 +683,14 @@ class HeaderRaw:
 
 
 class Header:
-    def __init__(self, raw: HeaderRaw, nonce: int) -> None:
+    def __init__(self, raw: RawHeader, nonce: int) -> None:
         self.raw = raw
         self.nonce = nonce
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all([
             self.raw == other.raw,
             self.nonce == other.nonce,
@@ -711,9 +706,10 @@ class Header:
 
     @classmethod
     def json_decode(cls, data: typing.Dict) -> Self:
-        raw = HeaderRaw.json_decode(data)
-        nonce = int(data['nonce'], 16)
-        return Header(raw, nonce)
+        return Header(
+            RawHeader.json_decode(data),
+            int(data['nonce'], 16),
+        )
 
     def molecule(self) -> bytearray:
         return ckb.molecule.encode_seq([
@@ -724,17 +720,17 @@ class Header:
     @classmethod
     def molecule_decode(cls, data: bytearray) -> Self:
         result = ckb.molecule.decode_seq(data, [
-            HeaderRaw.molecule_size(),
+            RawHeader.molecule_size(),
             ckb.molecule.U128.molecule_size(),
         ])
         return Header(
-            HeaderRaw.molecule_decode(result[0]),
+            RawHeader.molecule_decode(result[0]),
             ckb.molecule.U128.molecule_decode(result[1]),
         )
 
     @classmethod
     def molecule_size(cls) -> int:
-        return HeaderRaw.molecule_size() + ckb.molecule.U128.molecule_size()
+        return RawHeader.molecule_size() + ckb.molecule.U128.molecule_size()
 
 
 def dao_encode(c: int, ar: int, s: int, u: int) -> bytearray:
@@ -754,3 +750,214 @@ def dao_decode(d: bytearray) -> typing.Tuple[int, int, int, int]:
     s = int.from_bytes(d[0x10:0x18], 'little')
     u = int.from_bytes(d[0x18:0x20], 'little')
     return c, ar, s, u
+
+
+class UncleBlock:
+    def __init__(self, header: Header, proposals: typing.List[bytearray]) -> None:
+        self.header = header
+        self.proposals = proposals
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other: Self) -> bool:
+        return all([
+            self.header == other.header,
+            self.proposals == other.proposals,
+        ])
+
+    def json(self) -> typing.Dict:
+        return {
+            'header': self.header.json(),
+            'proposals': [f'0x{e.hex()}' for e in self.proposals],
+        }
+
+    @classmethod
+    def json_decode(cls, data: typing.Dict) -> Self:
+        return UncleBlock(
+            Header.json_decode(data['header']),
+            [bytearray.fromhex(e[2:]) for e in data['proposals']]
+        )
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_dynvec([
+            self.header.molecule(),
+            ckb.molecule.encode_fixvec(self.proposals),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_dynvec(data)
+        return UncleBlock(
+            Header.molecule_decode(result[0]),
+            ckb.molecule.decode_fixvec(result[1]),
+        )
+
+
+class Block:
+    def __init__(
+        self,
+        header: Header,
+        uncles: typing.List[UncleBlock],
+        transactions: typing.List[Transaction],
+        proposals: typing.List[bytearray],
+    ) -> None:
+        self.header = header
+        self.uncles = uncles
+        self.transactions = transactions
+        self.proposals = proposals
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other: Self) -> bool:
+        return all([
+            self.header == other.header,
+            self.uncles == other.uncles,
+            self.transactions == other.transactions,
+            self.proposals == other.proposals,
+        ])
+
+    def json(self) -> typing.Dict:
+        return {
+            'header': self.header.json(),
+            'uncles': [e.json() for e in self.uncles],
+            'transactions': [e.json() for e in self.transactions],
+            'proposals': [f'0x{e.hex()}' for e in self.proposals],
+        }
+
+    @classmethod
+    def json_decode(cls, data: typing.Dict) -> Self:
+        return Block(
+            Header.json_decode(data['header']),
+            [UncleBlock.json_decode(e) for e in data['uncles']],
+            [Transaction.json_decode(e) for e in data['transactions']],
+            [bytearray.fromhex(e[2:]) for e in data['proposals']],
+        )
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_dynvec([
+            self.header.molecule(),
+            ckb.molecule.encode_dynvec([e.molecule() for e in self.uncles]),
+            ckb.molecule.encode_dynvec([e.molecule() for e in self.transactions]),
+            ckb.molecule.encode_fixvec(self.proposals),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_dynvec(data)
+        return Block(
+            Header.molecule_decode(result[0]),
+            [UncleBlock.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[1])],
+            [Transaction.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[2])],
+            ckb.molecule.decode_fixvec(result[3]),
+        )
+
+
+class BlockV1:
+    def __init__(
+        self,
+        header: Header,
+        uncles: typing.List[UncleBlock],
+        transactions: typing.List[Transaction],
+        proposals: typing.List[bytearray],
+        extension: bytearray,
+    ) -> None:
+        self.header = header
+        self.uncles = uncles
+        self.transactions = transactions
+        self.proposals = proposals
+        self.extension = extension
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other: Self) -> bool:
+        return all([
+            self.header == other.header,
+            self.uncles == other.uncles,
+            self.transactions == other.transactions,
+            self.proposals == other.proposals,
+            self.extension == other.extension,
+        ])
+
+    def json(self) -> typing.Dict:
+        return {
+            'header': self.header.json(),
+            'uncles': [e.json() for e in self.uncles],
+            'transactions': [e.json() for e in self.transactions],
+            'proposals': [f'0x{e.hex()}' for e in self.proposals],
+            'extension': f'0x{self.extension.hex()}'
+        }
+
+    @classmethod
+    def json_decode(cls, data: typing.Dict) -> Self:
+        return BlockV1(
+            Header.json_decode(data['header']),
+            [UncleBlock.json_decode(e) for e in data['uncles']],
+            [Transaction.json_decode(e) for e in data['transactions']],
+            [bytearray.fromhex(e[2:]) for e in data['proposals']],
+            bytearray.fromhex(data['extension'][2:]),
+        )
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_dynvec([
+            self.header.molecule(),
+            ckb.molecule.encode_dynvec([e.molecule() for e in self.uncles]),
+            ckb.molecule.encode_dynvec([e.molecule() for e in self.transactions]),
+            ckb.molecule.encode_fixvec(self.proposals),
+            ckb.molecule.Bytes(self.extension).molecule(),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_dynvec(data)
+        return BlockV1(
+            Header.molecule_decode(result[0]),
+            [UncleBlock.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[1])],
+            [Transaction.molecule_decode(e) for e in ckb.molecule.decode_dynvec(result[2])],
+            ckb.molecule.decode_fixvec(result[3]),
+            ckb.molecule.Bytes.molecule_decode(result[4]),
+        )
+
+
+class CellbaseWitness:
+    def __init__(self, lock: Script, message: bytearray) -> None:
+        self.lock = lock
+        self.message = message
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other: Self) -> bool:
+        return all([
+            self.lock == other.lock,
+            self.message == other.message,
+        ])
+
+    def json(self) -> typing.Dict:
+        return {
+            'lock': self.lock.json(),
+            'message': f'0x{self.message.hex()}',
+        }
+
+    @classmethod
+    def json_deocde(cls, data: typing.Dict) -> Self:
+        return CellbaseWitness(
+            Script.json_decode(data['lock']),
+            bytearray.fromhex(data['message'][2:]),
+        )
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_dynvec([
+            self.lock.molecule(),
+            ckb.molecule.Bytes(self.message).molecule(),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_dynvec(data)
+        return CellbaseWitness(
+            Script.molecule_decode(result[0]),
+            ckb.molecule.Bytes.molecule_decode(result[1]),
+        )

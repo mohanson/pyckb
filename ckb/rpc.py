@@ -69,8 +69,8 @@ def get_banned_addresses():
     pass
 
 
-def get_block():
-    pass
+def get_block(block_hash: str) -> typing.Dict:
+    return call('get_block', [block_hash])
 
 
 def get_block_by_number(block_number: str) -> typing.Dict:
@@ -145,12 +145,12 @@ def get_fork_block():
     pass
 
 
-def get_header(block_hash: str, verbosity: int = None) -> typing.Dict:
-    return call('get_header', [block_hash, verbosity])
+def get_header(block_hash: str) -> typing.Dict:
+    return call('get_header', [block_hash])
 
 
-def get_header_by_number(block_number: str, verbosity: int = None) -> typing.Dict:
-    return call('get_header_by_number', [block_number, verbosity])
+def get_header_by_number(block_number: str) -> typing.Dict:
+    return call('get_header_by_number', [block_number])
 
 
 def get_indexer_tip() -> typing.Dict:
@@ -181,8 +181,8 @@ def get_tip_header() -> typing.Dict:
     return call('get_tip_header', [])
 
 
-def get_transaction(tx_hash: str, verbosity: int = None, only_committed: int = None) -> typing.Dict:
-    return call('get_transaction', [tx_hash, verbosity, only_committed])
+def get_transaction(tx_hash: str) -> typing.Dict:
+    return call('get_transaction', [tx_hash])
 
 
 def get_transaction_and_witness_proof():
@@ -229,8 +229,8 @@ def send_alert():
     pass
 
 
-def send_transaction(transaction: typing.Dict, outputs_validator: str = None) -> str:
-    return call('send_transaction', [transaction, outputs_validator])
+def send_transaction(transaction: typing.Dict) -> str:
+    return call('send_transaction', [transaction])
 
 
 def set_ban():
