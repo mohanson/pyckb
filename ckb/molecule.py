@@ -165,3 +165,23 @@ class U64:
     @classmethod
     def molecule_size(cls) -> int:
         return 8
+
+
+class U128:
+    def __init__(self, data: int) -> None:
+        assert 0 <= data and data <= 0xffffffffffffffffffffffffffffffff
+        self.data = data
+
+    def __eq__(self, other) -> bool:
+        return self.data == other.data
+
+    def molecule(self) -> bytearray:
+        return self.data.to_bytes(16, 'little')
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> int:
+        return int.from_bytes(data, 'little')
+
+    @classmethod
+    def molecule_size(cls) -> int:
+        return 16

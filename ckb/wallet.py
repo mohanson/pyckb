@@ -397,16 +397,16 @@ class Wallet:
         assert origin.type.args == bytearray()
         deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
         deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
-        deposit_block_header = ckb.rpc.get_header_by_number(hex(deposit_block_number))
-        deposit_block_hash = bytearray.fromhex(deposit_block_header['hash'][2:])
-        deposit_block_epoch = ckb.core.epoch_decode(int(deposit_block_header['epoch'], 16))
+        deposit_block_header = ckb.core.Header.json_decode(ckb.rpc.get_header_by_number(hex(deposit_block_number)))
+        deposit_block_hash = deposit_block_header.hash()
+        deposit_block_epoch = ckb.core.epoch_decode(deposit_block_header.raw.epoch)
         deposit_block_epoch_float = deposit_block_epoch[0] + deposit_block_epoch[1] / deposit_block_epoch[2]
-        deposit_dao_ar = int.from_bytes(bytearray.fromhex(deposit_block_header['dao'][2:])[8:16], 'little')
+        deposit_dao_ar = ckb.core.dao_decode(deposit_block_header.raw.dao)[1]
         prepare_block_hash = bytearray.fromhex(result['tx_status']['block_hash'][2:])
-        prepare_block_header = ckb.rpc.get_header('0x' + prepare_block_hash.hex())
-        prepare_block_epoch = ckb.core.epoch_decode(int(prepare_block_header['epoch'], 16))
+        prepare_block_header = ckb.core.Header.json_decode(ckb.rpc.get_header('0x' + prepare_block_hash.hex()))
+        prepare_block_epoch = ckb.core.epoch_decode(prepare_block_header.raw.epoch)
         prepare_block_epoch_float = prepare_block_epoch[0] + prepare_block_epoch[1] / prepare_block_epoch[2]
-        prepare_dao_ar = int.from_bytes(bytearray.fromhex(prepare_block_header['dao'][2:])[8:16], 'little')
+        prepare_dao_ar = ckb.core.dao_decode(prepare_block_header.raw.dao)[1]
         extract_since_delay = math.ceil((prepare_block_epoch_float - deposit_block_epoch_float) / 180) * 180
         extract_since_epoch = ckb.core.epoch_encode(
             deposit_block_epoch[0] + extract_since_delay,

@@ -141,7 +141,7 @@ class Script:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         code_hash = bytearray.fromhex(data['code_hash'][2:])
         hash_type = {
             'data': 0,
@@ -211,7 +211,7 @@ class OutPoint:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         return OutPoint(bytearray.fromhex(data['tx_hash'][2:]), int(data['index'], 16))
 
     def molecule(self) -> bytearray:
@@ -257,7 +257,7 @@ class CellInput:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         since = int(data['since'], 16)
         previous_output = OutPoint.json_decode(data['previous_output'])
         return CellInput(since, previous_output)
@@ -308,7 +308,7 @@ class CellOutput:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         capacity = int(data['capacity'], 16)
         lock = Script.json_decode(data['lock'])
         type = Script.json_decode(data['type']) if data['type'] else None
@@ -346,7 +346,7 @@ class CellDep:
         ])
 
     @classmethod
-    def conf_decode(cls, data: dict) -> Self:
+    def conf_decode(cls, data: typing.Dict) -> Self:
         return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
 
     def json(self) -> typing.Dict:
@@ -359,7 +359,7 @@ class CellDep:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         out_point = OutPoint.json_decode(data['out_point'])
         dep_type = {
             'code': 0,
@@ -433,7 +433,7 @@ class TransactionRaw:
         }
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         version = int(data['version'], 16)
         cell_deps = [CellDep.json_decode(e) for e in data['cell_deps']]
         header_deps = [bytearray.fromhex(e[2:]) for e in data['header_deps']]
@@ -485,7 +485,7 @@ class Transaction:
         return r
 
     @classmethod
-    def json_decode(cls, data: dict) -> Self:
+    def json_decode(cls, data: typing.Dict) -> Self:
         raw = TransactionRaw.json_decode(data)
         witnesses = [bytearray.fromhex(e[2:]) for e in data['witnesses']]
         return Transaction(raw, witnesses)
@@ -512,7 +512,7 @@ def epoch_encode(e: int, i: int, l: int) -> int:
     return l << 0x28 | i << 0x18 | e
 
 
-def epoch_decode(v: int):
+def epoch_decode(v: int) -> typing.Tuple[int, int, int]:
     e = v & 0xffffff
     i = v >> 0x18 & 0xffff
     l = v >> 0x28 & 0xffff
@@ -557,3 +557,200 @@ class WitnessArgs:
             ckb.molecule.Bytes.molecule_decode(result[1]) if result[1] else None,
             ckb.molecule.Bytes.molecule_decode(result[2]) if result[2] else None,
         )
+
+
+class HeaderRaw:
+    def __init__(
+        self,
+        version: int,
+        compact_target: int,
+        timestamp: int,
+        number: int,
+        epoch: int,
+        parent_hash: bytearray,
+        transactions_root: bytearray,
+        proposals_hash: bytearray,
+        extra_hash: bytearray,
+        dao: bytearray,
+    ) -> None:
+        self.version = version
+        self.compact_target = compact_target
+        self.timestamp = timestamp
+        self.number = number
+        self.epoch = epoch
+        self.parent_hash = parent_hash
+        self.transactions_root = transactions_root
+        self.proposals_hash = proposals_hash
+        self.extra_hash = extra_hash
+        self.dao = dao
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other) -> bool:
+        return all([
+            self.version == other.version,
+            self.compact_target == other.compact_target,
+            self.timestamp == other.timestamp,
+            self.number == other.number,
+            self.epoch == other.epoch,
+            self.parent_hash == other.parent_hash,
+            self.transactions_root == other.transactions_root,
+            self.proposals_hash == other.proposals_hash,
+            self.extra_hash == other.extra_hash,
+            self.dao == other.dao,
+        ])
+
+    def json(self) -> typing.Dict:
+        return {
+            'version': f'0x{hex(self.version)}',
+            'compact_target': f'0x{hex(self.compact_target)}',
+            'timestamp': f'0x{hex(self.timestamp)}',
+            'number': f'0x{hex(self.number)}',
+            'epoch': f'0x{hex(self.epoch)}',
+            'parent_hash': f'0x{self.parent_hash.hex()}',
+            'transactions_root': f'0x{self.transactions_root.hex()}',
+            'proposals_hash': f'0x{self.proposals_hash.hex()}',
+            'extra_hash': f'0x{self.extra_hash.hex()}',
+            'dao': f'0x{self.dao.hex()}',
+        }
+
+    @classmethod
+    def json_decode(cls, data: typing.Dict) -> Self:
+        return HeaderRaw(
+            version=int(data['version'], 16),
+            compact_target=int(data['compact_target'], 16),
+            timestamp=int(data['timestamp'], 16),
+            number=int(data['number'], 16),
+            epoch=int(data['epoch'], 16),
+            parent_hash=bytearray.fromhex(data['parent_hash'][2:]),
+            transactions_root=bytearray.fromhex(data['transactions_root'][2:]),
+            proposals_hash=bytearray.fromhex(data['proposals_hash'][2:]),
+            extra_hash=bytearray.fromhex(data['extra_hash'][2:]),
+            dao=bytearray.fromhex(data['dao'][2:]),
+        )
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_seq([
+            ckb.molecule.U32(self.version).molecule(),
+            ckb.molecule.U32(self.compact_target).molecule(),
+            ckb.molecule.U64(self.timestamp).molecule(),
+            ckb.molecule.U64(self.number).molecule(),
+            ckb.molecule.U64(self.epoch).molecule(),
+            ckb.molecule.Byte32(self.parent_hash).molecule(),
+            ckb.molecule.Byte32(self.transactions_root).molecule(),
+            ckb.molecule.Byte32(self.proposals_hash).molecule(),
+            ckb.molecule.Byte32(self.extra_hash).molecule(),
+            ckb.molecule.Byte32(self.dao).molecule(),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_seq(data, [
+            ckb.molecule.U32.molecule_size(),
+            ckb.molecule.U32.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+        ])
+        return HeaderRaw(
+            ckb.molecule.U32.molecule_decode(result[0]),
+            ckb.molecule.U32.molecule_decode(result[1]),
+            ckb.molecule.U64.molecule_decode(result[2]),
+            ckb.molecule.U64.molecule_decode(result[3]),
+            ckb.molecule.U64.molecule_decode(result[4]),
+            ckb.molecule.Byte32.molecule_decode(result[5]),
+            ckb.molecule.Byte32.molecule_decode(result[6]),
+            ckb.molecule.Byte32.molecule_decode(result[7]),
+            ckb.molecule.Byte32.molecule_decode(result[8]),
+            ckb.molecule.Byte32.molecule_decode(result[9]),
+        )
+
+    @classmethod
+    def molecule_size(cls) -> int:
+        return sum([
+            ckb.molecule.U32.molecule_size(),
+            ckb.molecule.U32.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.U64.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+            ckb.molecule.Byte32.molecule_size(),
+        ])
+
+
+class Header:
+    def __init__(self, raw: HeaderRaw, nonce: int) -> None:
+        self.raw = raw
+        self.nonce = nonce
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def __eq__(self, other) -> bool:
+        return all([
+            self.raw == other.raw,
+            self.nonce == other.nonce,
+        ])
+
+    def hash(self) -> bytearray:
+        return hash(self.molecule())
+
+    def json(self) -> typing.Dict:
+        r = self.raw.json()
+        r['nonce'] = f'0x{hex(self.nonce)}'
+        return r
+
+    @classmethod
+    def json_decode(cls, data: typing.Dict) -> Self:
+        raw = HeaderRaw.json_decode(data)
+        nonce = int(data['nonce'], 16)
+        return Header(raw, nonce)
+
+    def molecule(self) -> bytearray:
+        return ckb.molecule.encode_seq([
+            self.raw.molecule(),
+            ckb.molecule.U128(self.nonce).molecule(),
+        ])
+
+    @classmethod
+    def molecule_decode(cls, data: bytearray) -> Self:
+        result = ckb.molecule.decode_seq(data, [
+            HeaderRaw.molecule_size(),
+            ckb.molecule.U128.molecule_size(),
+        ])
+        return Header(
+            HeaderRaw.molecule_decode(result[0]),
+            ckb.molecule.U128.molecule_decode(result[1]),
+        )
+
+    @classmethod
+    def molecule_size(cls) -> int:
+        return HeaderRaw.molecule_size() + ckb.molecule.U128.molecule_size()
+
+
+def dao_encode(c: int, ar: int, s: int, u: int) -> bytearray:
+    # CKB's block header has a particular field named dao containing auxiliary information for Nervos DAO's use.
+    # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md
+    r = bytearray()
+    r.extend(bytearray(c.to_bytes(8, 'little')))
+    r.extend(bytearray(ar.to_bytes(8, 'little')))
+    r.extend(bytearray(s.to_bytes(8, 'little')))
+    r.extend(bytearray(u.to_bytes(8, 'little')))
+    return r
+
+
+def dao_decode(d: bytearray) -> typing.Tuple[int, int, int, int]:
+    c = int.from_bytes(d[0x00:0x08], 'little')
+    ar = int.from_bytes(d[0x08:0x10], 'little')
+    s = int.from_bytes(d[0x10:0x18], 'little')
+    u = int.from_bytes(d[0x18:0x20], 'little')
+    return c, ar, s, u
