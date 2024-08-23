@@ -3,6 +3,8 @@ import random
 
 
 def test_addr():
+    ckb.config.upgrade('http://127.0.0.1:8114')
+    ckb.config.current = ckb.config.develop
     prikey = ckb.core.PriKey(1)
     pubkey = prikey.pubkey()
     args = ckb.core.hash(pubkey.sec())[:20]
@@ -25,7 +27,6 @@ def test_block():
     block_bin = bytearray.fromhex(block_hex[2:])
     block = ckb.core.Block.molecule_decode(block_bin)
     assert block.molecule() == block_bin
-    ckb.config.current = ckb.config.develop
 
 
 def test_block_v1():
@@ -35,7 +36,6 @@ def test_block_v1():
     block_bin = bytearray.fromhex(block_hex[2:])
     block = ckb.core.BlockV1.molecule_decode(block_bin)
     assert block.molecule() == block_bin
-    ckb.config.current = ckb.config.develop
 
 
 def test_epoch():
