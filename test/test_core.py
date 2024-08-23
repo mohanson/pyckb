@@ -17,6 +17,15 @@ def test_addr():
     assert ckb.core.Script.molecule_decode(script.molecule()) == script
 
 
+def test_block_v1():
+    ckb.config.current = ckb.config.mainnet
+    block_hex = ckb.rpc.call('get_block_by_number', ['0xd3220e', '0x0'])
+    block_bin = bytearray.fromhex(block_hex[2:])
+    block = ckb.core.BlockV1.molecule_decode(block_bin)
+    assert block.molecule() == block_bin
+    ckb.config.current = ckb.config.develop
+
+
 def test_epoch():
     assert ckb.core.epoch_decode(0x3690138000093) == (147, 312, 873)
     assert ckb.core.epoch_encode(147, 312, 873) == 0x3690138000093
