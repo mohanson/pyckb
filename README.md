@@ -14,7 +14,7 @@ $ python -m pip install pyckb
 # or
 $ git clone https://github.com/mohanson/pyckb
 $ cd pyckb
-$ python -m pip install --editable . --config-settings editable_mode=strict
+$ python -m pip install --editable .
 ```
 
 ## Usage
@@ -81,9 +81,9 @@ $ python example/txdump.py --net testnet --hash 0x123b09a89e65cc9c375dab739c9c92
 ## Test
 
 ```sh
-$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.115.0/ckb_v0.115.0_x86_64-unknown-linux-gnu.tar.gz
-$ tar -zxvf ckb_v0.115.0_x86_64-unknown-linux-gnu.tar.gz
-$ cd ckb_v0.115.0_x86_64-unknown-linux-gnu/
+$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.117.0/ckb_v0.117.0_x86_64-unknown-linux-gnu.tar.gz
+$ tar -xvf ckb_v0.117.0_x86_64-unknown-linux-gnu.tar.gz
+$ cd ckb_v0.117.0_x86_64-unknown-linux-gnu/
 
 $ ckb init --chain dev --ba-arg 0x75178f34549c5fe9cd1a0c57aebd01e7ddf9249e --ba-message 0xabcd
 $ ckb run --indexer
