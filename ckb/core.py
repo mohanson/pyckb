@@ -13,6 +13,12 @@ Self = typing.Self
 type_id_code_hash = bytearray.fromhex('00000000000000000000000000000000000000000000000000545950455f4944')
 type_id_hash_type = 1
 
+# Specifies how the script code_hash is used to match the script code and how to run the code.
+script_hash_type_data = 0
+script_hash_type_type = 1
+script_hash_type_data1 = 2
+script_hash_type_data2 = 4
+
 
 def hash(data: bytearray) -> bytearray:
     return bytearray(hashlib.blake2b(data, digest_size=32, person=b'ckb-default-hash').digest())
@@ -111,7 +117,12 @@ class PubKey:
 class Script:
     def __init__(self, code_hash: bytearray, hash_type: int, args: bytearray) -> None:
         assert len(code_hash) == 32
-        assert hash_type in [0, 1, 2]  # 0 => data, 1 => type, 2 => data1
+        assert hash_type in [
+            script_hash_type_data,
+            script_hash_type_type,
+            script_hash_type_data1,
+            script_hash_type_data2,
+        ]
         self.code_hash = code_hash
         self.hash_type = hash_type
         self.args = args
@@ -132,7 +143,12 @@ class Script:
     def json(self) -> typing.Dict:
         return {
             'code_hash': f'0x{self.code_hash.hex()}',
-            'hash_type': {0: 'data', 1: 'type', 2: 'data1'}[self.hash_type],
+            'hash_type': {
+                script_hash_type_data: 'data',
+                script_hash_type_type: 'type',
+                script_hash_type_data1: 'data1',
+                script_hash_type_data2: 'data2',
+            }[self.hash_type],
             'args': f'0x{self.args.hex()}',
         }
 
@@ -140,7 +156,12 @@ class Script:
     def json_decode(cls, data: typing.Dict) -> Self:
         return Script(
             bytearray.fromhex(data['code_hash'][2:]),
-            {'data': 0, 'type': 1, 'data1': 2}[data['hash_type']],
+            {
+                'data': script_hash_type_data,
+                'type': script_hash_type_type,
+                'data1': script_hash_type_data1,
+                'data2': script_hash_type_data2,
+            }[data['hash_type']],
             bytearray.fromhex(data['args'][2:]),
         )
 
