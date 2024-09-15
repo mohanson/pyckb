@@ -27,5 +27,9 @@ def test_redeem():
     call('python example/redeem.py --prikey 1')
 
 
+def test_transfer():
+    call('python example/transfer.py --prikey 1 --to ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqdrcaufs8qeu8wvvy0myyedek4vqad9qeq3gc4cf --value 100')
+
+
 def test_txdump():
     call('python example/txdump.py --net testnet --hash 0x123b09a89e65cc9c375dab739c9c921f7067d0b205e563135bb5a1221f8948d9')

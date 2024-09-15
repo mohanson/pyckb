@@ -70,6 +70,14 @@ Attempt to withdraw all funds from Dao. When running the test case of pyckb by `
 $ python example/redeem.py --prikey 1
 ```
 
+**example/transfer.py**
+
+Transfer ckb to another account. If value is 0, then all assets will be transferred.
+
+```sh
+$ python example/transfer.py --prikey 1 --to ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqdrcaufs8qeu8wvvy0myyedek4vqad9qeq3gc4cf --value 100
+```
+
 **example/txdump.py**
 
 Dump full transaction data for ckb-debugger to use.
