@@ -5,9 +5,9 @@ import ckb
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='develop')
-parser.add_argument('--prikey', type=str, required=True, help='private key')
-parser.add_argument('--to', type=str, required=True, help='ckb address')
-parser.add_argument('--value', type=float, required=True, help='ckb value')
+parser.add_argument('--prikey', type=str, help='private key')
+parser.add_argument('--to', type=str, help='ckb address')
+parser.add_argument('--value', type=float, help='ckb value')
 args = parser.parse_args()
 
 if args.net == 'develop':
