@@ -28,6 +28,12 @@ class WalletTransactionAnalyzer:
     def analyze_outputs_data(self) -> None:
         assert len(self.tx.raw.outputs) == len(self.tx.raw.outputs_data)
 
+    def analyze_outputs_lock(self) -> None:
+        for e in self.tx.raw.outputs:
+            if e.lock.code_hash == ckb.config.current.script.secp256k1_blake160.code_hash:
+                assert e.lock.hash_type == ckb.config.current.script.secp256k1_blake160.hash_type
+                assert len(e.lock.args) == 20
+
     def analyze_since(self) -> None:
         # Transaction since precondition
         # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0017-tx-valid-since/0017-tx-valid-since.md
@@ -55,6 +61,7 @@ class WalletTransactionAnalyzer:
     def analyze(self) -> None:
         self.analyze_mining_fee()
         self.analyze_outputs_data()
+        self.analyze_outputs_lock()
         self.analyze_since()
 
 
