@@ -6,6 +6,8 @@ Self = typing.Self
 def decode_dynvec(data: bytearray) -> typing.List[bytearray]:
     assert len(data) >= 4
     assert len(data) == int.from_bytes(data[0:4], 'little')
+    if len(data) == 4:
+        return []
     nums = int.from_bytes(data[4:8], 'little') // 4 - 1
     head = []
     for i in range(nums):
