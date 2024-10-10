@@ -127,7 +127,7 @@ class Wallet:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(bytearray())
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -141,9 +141,8 @@ class Wallet:
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -160,7 +159,7 @@ class Wallet:
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.secp256k1_blake160.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -171,9 +170,8 @@ class Wallet:
         tx.raw.outputs[0].capacity = accept_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -193,7 +191,7 @@ class Wallet:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -207,9 +205,8 @@ class Wallet:
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -221,7 +218,7 @@ class Wallet:
         sender_capacity = 0
         accept_capacity = (126 + len(data)) * ckb.denomination.ckbytes
         accept_script = script
-        accept_typeid = ckb.core.Script(ckb.core.type_id_code_hash, ckb.core.type_id_hash_type, bytearray([0] * 32))
+        accept_typeid = ckb.core.Script(ckb.core.type_id_code_hash, ckb.core.type_id_hash_type, bytearray(32))
         change_capacity = 0
         change_script = self.script
         tx = ckb.core.Transaction(ckb.core.RawTransaction(0, [], [], [], [], []), [])
@@ -230,7 +227,7 @@ class Wallet:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -242,13 +239,12 @@ class Wallet:
                 break
         assert change_capacity >= 61 * ckb.denomination.ckbytes
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#type-id
-        tx.raw.outputs[0].type.args = ckb.core.hash(tx.raw.inputs[0].molecule() + bytearray([0] * 8))
+        tx.raw.outputs[0].type.args = ckb.core.hash(tx.raw.inputs[0].molecule() + bytearray(8))
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -279,7 +275,7 @@ class Wallet:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(data)
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -293,9 +289,8 @@ class Wallet:
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -322,9 +317,9 @@ class Wallet:
         tx.raw.cell_deps.append(ckb.core.CellDep.conf_decode(ckb.config.current.script.dao.cell_dep))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
-        tx.raw.outputs_data.append(bytearray([0] * 8))
+        tx.raw.outputs_data.append(bytearray(8))
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -338,9 +333,8 @@ class Wallet:
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -371,7 +365,7 @@ class Wallet:
         tx.raw.outputs.append(ckb.core.CellOutput(change_capacity, change_script, None))
         tx.raw.outputs_data.append(number.to_bytes(8, 'little'))
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), None, None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
             cell_out_point = ckb.core.OutPoint.json_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
@@ -385,9 +379,8 @@ class Wallet:
         tx.raw.outputs[1].capacity = change_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
         tx.witnesses[0] = ckb.core.WitnessArgs(sign, None, None).molecule()
@@ -433,17 +426,16 @@ class Wallet:
         tx.raw.inputs.append(ckb.core.CellInput(extract_since, out_point))
         tx.raw.outputs.append(ckb.core.CellOutput(accept_capacity, accept_script, None))
         tx.raw.outputs_data.append(bytearray())
-        tx.witnesses.append(ckb.core.WitnessArgs(bytearray([0] * 65), bytearray([0] * 8), None).molecule())
+        tx.witnesses.append(ckb.core.WitnessArgs(bytearray(65), bytearray(8), None).molecule())
         accept_capacity = sender_capacity - len(tx.molecule()) - 4
         tx.raw.outputs[0].capacity = accept_capacity
         sign_data = bytearray()
         sign_data.extend(tx.raw.hash())
-        for witness in tx.witnesses:
-            sign_data.extend(len(witness).to_bytes(8, 'little'))
-            sign_data.extend(witness)
+        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
+        sign_data.extend(tx.witnesses[0])
         sign_data = ckb.core.hash(sign_data)
         sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray([0] * 8), None).molecule()
+        tx.witnesses[0] = ckb.core.WitnessArgs(sign, bytearray(8), None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = ckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
