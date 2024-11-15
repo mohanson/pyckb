@@ -59,20 +59,23 @@ for c in tx.raw.cell_deps:
         'data': f'0x{c_data.hex()}',
         'header': c_header,
     })
+for i in range(len(tx.raw.cell_deps)):
+    c = tx.raw.cell_deps[i]
     if c.dep_type != 1:
         continue
+    c_data = bytearray.fromhex(tx_mock['mock_info']['cell_deps'][i]['data'][2:])
     for e in ckb.molecule.decode_fixvec(c_data):
-        o = ckb.core.OutPoint.molecule_decode(e)
-        o_tx_rpc = ckb.rpc.get_transaction(f'0x{o.tx_hash.hex()}')
-        o_tx = ckb.core.Transaction.json_decode(o_tx_rpc['transaction'])
-        o_output = o_tx.raw.outputs[o.index]
-        o_data = o_tx.raw.outputs_data[o.index]
-        o_header = o_tx_rpc['tx_status']['block_hash']
+        d = ckb.core.OutPoint.molecule_decode(e)
+        d_tx_rpc = ckb.rpc.get_transaction(f'0x{d.tx_hash.hex()}')
+        d_tx = ckb.core.Transaction.json_decode(d_tx_rpc['transaction'])
+        d_output = d_tx.raw.outputs[d.index]
+        d_data = d_tx.raw.outputs_data[d.index]
+        d_header = d_tx_rpc['tx_status']['block_hash']
         tx_mock['mock_info']['cell_deps'].append({
-            'cell_dep': ckb.core.CellDep(o, 0).json(),
-            'output': o_output.json(),
-            'data': f'0x{o_data.hex()}',
-            'header': o_header,
+            'cell_dep': ckb.core.CellDep(d, 0).json(),
+            'output': d_output.json(),
+            'data': f'0x{d_data.hex()}',
+            'header': d_header,
         })
 for h in tx.raw.header_deps:
     h_rpc = ckb.rpc.get_header(f'0x{h.hex()}')
