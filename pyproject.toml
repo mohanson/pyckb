@@ -8,7 +8,7 @@ version = "1.1.0"
 authors = [
   { name="Mohanson", email="mohanson@outlook.com" },
 ]
-description = "pyckb: nervos ckb sdk for humans"
+description = "pyckb: nervos ckb library for humans"
 readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = ["requests"]

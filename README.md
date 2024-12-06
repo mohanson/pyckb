@@ -1,4 +1,4 @@
-# Pyckb: Nervos CKB SDK For Humans
+# Pyckb: Nervos CKB Library For Humans
 
 Pyckb is a project that aims to provide human-friendly interfaces for common ckb operations. Using pyckb, you can easily and happily complete everything you want to do on ckb.
 
