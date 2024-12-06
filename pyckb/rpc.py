@@ -1,6 +1,6 @@
-import ckb.config
-import ckb.core
 import itertools
+import pyckb.config
+import pyckb.core
 import random
 import requests
 import time
@@ -10,7 +10,7 @@ import typing
 
 
 def call(method: str, params: typing.List) -> typing.Any:
-    r = requests.post(ckb.config.current.url, json={
+    r = requests.post(pyckb.config.current.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
         'method': method,

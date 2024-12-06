@@ -1,11 +1,11 @@
-# Python SDK for CKB
+# Pyckb: Nervos CKB SDK For Humans
 
-Python CKB is an experimental project that aims to provide human-friendly interfaces for common CKB operations. Note that Python CKB is not a complete SDK, but only implements the CKB functions that I am interested in.
+Pyckb is a project that aims to provide human-friendly interfaces for common ckb operations. Using pyckb, you can easily and happily complete everything you want to do on ckb.
 
 Features:
 
-- No third-party dependencies. All code is visible.
-- Incredibly simple.
+- No third-party dependencies, everything is visible.
+- Incredibly simple, even a cat knows how to use it.
 
 ## Installation
 
@@ -19,7 +19,7 @@ $ python -m pip install --editable .
 
 ## Usage
 
-By default, pyckb is configured on the develop. To switch networks, see `ckb.config`.
+By default, pyckb is configured on the develop. To switch networks, use `pyckb.config.current = pyckb.config.mainnet`.
 
 **example/addr.py**
 
@@ -89,9 +89,9 @@ $ python example/txdump.py --net testnet --hash 0x123b09a89e65cc9c375dab739c9c92
 ## Test
 
 ```sh
-$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.117.0/ckb_v0.117.0_x86_64-unknown-linux-gnu.tar.gz
-$ tar -xvf ckb_v0.117.0_x86_64-unknown-linux-gnu.tar.gz
-$ cd ckb_v0.117.0_x86_64-unknown-linux-gnu/
+$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.119.0/ckb_v0.119.0_x86_64-unknown-linux-gnu.tar.gz
+$ tar -xvf ckb_v0.119.0_x86_64-unknown-linux-gnu.tar.gz
+$ cd ckb_v0.119.0_x86_64-unknown-linux-gnu/
 
 $ ckb init --chain dev --ba-arg 0x75178f34549c5fe9cd1a0c57aebd01e7ddf9249e --ba-message 0xabcd
 $ ckb run --indexer

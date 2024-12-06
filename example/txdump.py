@@ -1,6 +1,6 @@
 import argparse
-import ckb
 import json
+import pyckb
 
 # Dump full transaction data for [ckb-debugger](https://github.com/nervosnetwork/ckb-standalone-debugger) to use.
 
@@ -13,18 +13,18 @@ args = parser.parse_args()
 assert args.file or args.hash
 
 if args.net == 'develop':
-    ckb.config.upgrade('http://127.0.0.1:8114')
-    ckb.config.current = ckb.config.develop
+    pyckb.config.upgrade('http://127.0.0.1:8114')
+    pyckb.config.current = pyckb.config.develop
 if args.net == 'mainnet':
-    ckb.config.current = ckb.config.mainnet
+    pyckb.config.current = pyckb.config.mainnet
 if args.net == 'testnet':
-    ckb.config.current = ckb.config.testnet
+    pyckb.config.current = pyckb.config.testnet
 
 if args.file:
     tx_json = json.load(open(args.file))
 if args.hash:
-    tx_json = ckb.rpc.get_transaction(args.hash)['transaction']
-tx = ckb.core.Transaction.json_decode(tx_json)
+    tx_json = pyckb.rpc.get_transaction(args.hash)['transaction']
+tx = pyckb.core.Transaction.json_decode(tx_json)
 
 tx_mock = {
     'mock_info': {
@@ -36,8 +36,8 @@ tx_mock = {
 }
 
 for i in tx.raw.inputs:
-    i_tx_rpc = ckb.rpc.get_transaction(f'0x{i.previous_output.tx_hash.hex()}')
-    i_tx = ckb.core.Transaction.json_decode(i_tx_rpc['transaction'])
+    i_tx_rpc = pyckb.rpc.get_transaction(f'0x{i.previous_output.tx_hash.hex()}')
+    i_tx = pyckb.core.Transaction.json_decode(i_tx_rpc['transaction'])
     i_output = i_tx.raw.outputs[i.previous_output.index]
     i_data = i_tx.raw.outputs_data[i.previous_output.index]
     i_header = i_tx_rpc['tx_status']['block_hash']
@@ -48,8 +48,8 @@ for i in tx.raw.inputs:
         'header': i_header,
     })
 for c in tx.raw.cell_deps:
-    c_tx_rpc = ckb.rpc.get_transaction(f'0x{c.out_point.tx_hash.hex()}')
-    c_tx = ckb.core.Transaction.json_decode(c_tx_rpc['transaction'])
+    c_tx_rpc = pyckb.rpc.get_transaction(f'0x{c.out_point.tx_hash.hex()}')
+    c_tx = pyckb.core.Transaction.json_decode(c_tx_rpc['transaction'])
     c_output = c_tx.raw.outputs[c.out_point.index]
     c_data = c_tx.raw.outputs_data[c.out_point.index]
     c_header = c_tx_rpc['tx_status']['block_hash']
@@ -64,21 +64,21 @@ for i in range(len(tx.raw.cell_deps)):
     if c.dep_type != 1:
         continue
     c_data = bytearray.fromhex(tx_mock['mock_info']['cell_deps'][i]['data'][2:])
-    for e in ckb.molecule.decode_fixvec(c_data):
-        d = ckb.core.OutPoint.molecule_decode(e)
-        d_tx_rpc = ckb.rpc.get_transaction(f'0x{d.tx_hash.hex()}')
-        d_tx = ckb.core.Transaction.json_decode(d_tx_rpc['transaction'])
+    for e in pyckb.molecule.decode_fixvec(c_data):
+        d = pyckb.core.OutPoint.molecule_decode(e)
+        d_tx_rpc = pyckb.rpc.get_transaction(f'0x{d.tx_hash.hex()}')
+        d_tx = pyckb.core.Transaction.json_decode(d_tx_rpc['transaction'])
         d_output = d_tx.raw.outputs[d.index]
         d_data = d_tx.raw.outputs_data[d.index]
         d_header = d_tx_rpc['tx_status']['block_hash']
         tx_mock['mock_info']['cell_deps'].append({
-            'cell_dep': ckb.core.CellDep(d, 0).json(),
+            'cell_dep': pyckb.core.CellDep(d, 0).json(),
             'output': d_output.json(),
             'data': f'0x{d_data.hex()}',
             'header': d_header,
         })
 for h in tx.raw.header_deps:
-    h_rpc = ckb.rpc.get_header(f'0x{h.hex()}')
+    h_rpc = pyckb.rpc.get_header(f'0x{h.hex()}')
     tx_mock['mock_info']['header_deps'].push(h_rpc)
 
 print(json.dumps(tx_mock, indent=4))

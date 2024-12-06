@@ -1,5 +1,5 @@
 import argparse
-import ckb
+import pyckb
 import itertools
 import random
 import requests
@@ -9,12 +9,12 @@ import time
 # specified user, breaking through the single address limit of the faucet.
 #
 # https://faucet.nervos.org/
-ckb.config.current = ckb.config.testnet
+pyckb.config.current = pyckb.config.testnet
 parser = argparse.ArgumentParser()
 parser.add_argument('--addr', type=str, help='ckb address')
 args = parser.parse_args()
 
-kana = ckb.wallet.Wallet(random.randint(0, ckb.secp256k1.N - 1))
+kana = pyckb.wallet.Wallet(random.randint(0, pyckb.secp256k1.N - 1))
 resp = requests.post('https://faucet-api.nervos.org/claim_events', json={
     'claim_event': {
         'address_hash': kana.addr,
@@ -38,7 +38,7 @@ for _ in itertools.repeat(0):
     break
 
 print(f'hash: {hash}')
-ckb.rpc.wait(hash)
-hash = kana.transfer_all(ckb.core.address_decode(args.addr))
+pyckb.rpc.wait(hash)
+hash = kana.transfer_all(pyckb.core.address_decode(args.addr))
 print(f'hash: 0x{hash.hex()}')
-ckb.rpc.wait(f'0x{hash.hex()}')
+pyckb.rpc.wait(f'0x{hash.hex()}')
