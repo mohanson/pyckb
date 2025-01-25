@@ -74,7 +74,7 @@ class Wallet:
             pyckb.config.current.script.secp256k1_blake160.hash_type,
             pyckb.core.hash(self.pubkey.sec())[:20]
         )
-        self.addr = pyckb.core.address_encode(self.script)
+        self.addr = self.script.addr()
 
     def __repr__(self) -> str:
         return json.dumps(self.json())

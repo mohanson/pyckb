@@ -39,6 +39,6 @@ for _ in itertools.repeat(0):
 
 print(f'hash: {hash}')
 pyckb.rpc.wait(hash)
-hash = kana.transfer_all(pyckb.core.address_decode(args.addr))
+hash = kana.transfer_all(pyckb.core.Script.addr_decode(args.addr))
 print(f'hash: 0x{hash.hex()}')
 pyckb.rpc.wait(f'0x{hash.hex()}')

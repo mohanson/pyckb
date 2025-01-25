@@ -19,7 +19,7 @@ if args.net == 'testnet':
     pyckb.config.current = pyckb.config.testnet
 
 user = pyckb.wallet.Wallet(int(args.prikey, 0))
-hole = pyckb.core.address_decode(args.to)
+hole = pyckb.core.Script.addr_decode(args.to)
 if args.value == 0:
     hash = user.transfer_all(hole)
     print(f'0x{hash.hex()}')

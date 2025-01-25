@@ -24,5 +24,5 @@ script = pyckb.core.Script(
     pyckb.config.current.script.secp256k1_blake160.hash_type,
     args
 )
-addr = pyckb.core.address_encode(script)
+addr = script.addr()
 print(addr)

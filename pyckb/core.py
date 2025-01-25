@@ -136,6 +136,26 @@ class Script:
             self.args == other.args,
         ])
 
+    def addr(self) -> str:
+        # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
+        # See: https://github.com/rev-chaos/ckb-address-demo/blob/master/ckb_addr_test.py
+        payload = bytearray()
+        payload.append(0x00)
+        # Append secp256k1 code hash
+        payload.extend(self.code_hash)
+        payload.append(self.hash_type)
+        payload.extend(self.args)
+        return pyckb.bech32.encode(pyckb.config.current.hrp, payload)
+
+    @classmethod
+    def addr_decode(cls, data: str) -> typing.Self:
+        payload = pyckb.bech32.decode(pyckb.config.current.hrp, data)
+        assert payload[0] == 0
+        code_hash = payload[1:33]
+        hash_type = payload[33]
+        args = payload[34:]
+        return Script(code_hash, hash_type, args)
+
     def hash(self) -> bytearray:
         return hash(self.molecule())
 
@@ -179,27 +199,6 @@ class Script:
             pyckb.molecule.Byte.molecule_decode(result[1]),
             pyckb.molecule.Bytes.molecule_decode(result[2]),
         )
-
-
-def address_encode(script: Script) -> str:
-    # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
-    # See: https://github.com/rev-chaos/ckb-address-demo/blob/master/ckb_addr_test.py
-    payload = bytearray()
-    payload.append(0x00)
-    # Append secp256k1 code hash
-    payload.extend(script.code_hash)
-    payload.append(script.hash_type)
-    payload.extend(script.args)
-    return pyckb.bech32.encode(pyckb.config.current.hrp, payload)
-
-
-def address_decode(addr: str) -> Script:
-    payload = pyckb.bech32.decode(pyckb.config.current.hrp, addr)
-    assert payload[0] == 0
-    code_hash = payload[1:33]
-    hash_type = payload[33]
-    args = payload[34:]
-    return Script(code_hash, hash_type, args)
 
 
 class OutPoint:

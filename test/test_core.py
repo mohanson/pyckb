@@ -13,9 +13,9 @@ def test_addr():
         pyckb.config.current.script.secp256k1_blake160.hash_type,
         args
     )
-    addr = pyckb.core.address_encode(script)
+    addr = script.addr()
     assert addr == 'ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqt4z78ng4yutl5u6xsv27ht6q08mhujf8s2r0n40'
-    assert pyckb.core.address_decode(addr) == script
+    assert pyckb.core.Script.addr_decode(addr) == script
     assert script.hash().hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert pyckb.core.Script.molecule_decode(script.molecule()) == script
 
