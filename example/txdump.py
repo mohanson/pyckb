@@ -79,6 +79,6 @@ for i in range(len(tx.raw.cell_deps)):
         })
 for h in tx.raw.header_deps:
     h_rpc = pyckb.rpc.get_header(f'0x{h.hex()}')
-    tx_mock['mock_info']['header_deps'].push(h_rpc)
+    tx_mock['mock_info']['header_deps'].append(h_rpc)
 
 print(json.dumps(tx_mock, indent=4))
