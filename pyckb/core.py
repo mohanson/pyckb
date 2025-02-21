@@ -207,14 +207,17 @@ class OutPoint:
         self.tx_hash = tx_hash
         self.index = index
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.tx_hash == other.tx_hash,
             self.index == other.index,
         ])
+
+    def __hash__(self) -> int:
+        return int.from_bytes(self.molecule())
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
