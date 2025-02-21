@@ -139,13 +139,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -168,13 +163,8 @@ class Wallet:
             tx.raw.inputs.append(cell_input)
         accept_capacity = sender_capacity - len(tx.molecule()) - 4
         tx.raw.outputs[0].capacity = accept_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -203,13 +193,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -241,13 +226,8 @@ class Wallet:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#type-id
         tx.raw.outputs[0].type.args = pyckb.core.hash(tx.raw.inputs[0].molecule() + bytearray(8))
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -287,13 +267,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -331,13 +306,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -377,13 +347,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         tx.raw.outputs[1].capacity = change_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, None, None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])
@@ -429,13 +394,8 @@ class Wallet:
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), bytearray(8), None).molecule())
         accept_capacity = sender_capacity - len(tx.molecule()) - 4
         tx.raw.outputs[0].capacity = accept_capacity
-        sign_data = bytearray()
-        sign_data.extend(tx.raw.hash())
-        sign_data.extend(len(tx.witnesses[0]).to_bytes(8, 'little'))
-        sign_data.extend(tx.witnesses[0])
-        sign_data = pyckb.core.hash(sign_data)
-        sign = self.prikey.sign(sign_data)
-        tx.witnesses[0] = pyckb.core.WitnessArgs(sign, bytearray(8), None).molecule()
+        sg = self.prikey.sign(tx.hash_sighash_all(0, []))
+        tx.witnesses[0] = pyckb.core.WitnessArgs(sg, bytearray(8), None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
         hash = pyckb.rpc.send_transaction(tx.json())
         return bytearray.fromhex(hash[2:])

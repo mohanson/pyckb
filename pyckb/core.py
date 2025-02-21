@@ -486,14 +486,34 @@ class Transaction:
         self.raw = raw
         self.witnesses = witnesses
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.raw == other.raw,
             self.witnesses == other.witnesses,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def hash_sighash_all(self, major: int, other: typing.List[int]) -> bytearray:
+        for e in WitnessArgs.molecule_decode(self.witnesses[major]).lock:
+            assert (e == 0)
+        major_w = self.witnesses[major]
+        major_l = len(major_w)
+        b = bytearray()
+        b.extend(self.raw.hash())
+        b.extend(major_l.to_bytes(8, 'little'))
+        b.extend(major_w)
+        for e in [e for e in other if e < self.witnesses.len()]:
+            w = self.witnesses[e]
+            l = len(w)
+            b.extend(l.to_bytes(8, 'little'))
+            b.extend(w)
+        for e in self.witnesses[len(self.raw.inputs):]:
+            l = len(e)
+            b.extend(l.to_bytes(8, 'little'))
+            b.extend(e)
+        return hash(b)
 
     def json(self) -> typing.Dict:
         r = self.raw.json()
