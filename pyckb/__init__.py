@@ -5,5 +5,6 @@ from . import denomination
 from . import ecdsa
 from . import molecule
 from . import rpc
-from . import wallet
 from . import secp256k1
+from . import unittest
+from . import wallet

@@ -26,59 +26,40 @@ if args.hash:
     tx_json = pyckb.rpc.get_transaction(args.hash)['transaction']
 tx = pyckb.core.Transaction.json_decode(tx_json)
 
-tx_mock = {
-    'mock_info': {
-        'inputs': [],
-        'cell_deps': [],
-        'header_deps': []
-    },
-    'tx': tx.json(),
-}
-
-for i in tx.raw.inputs:
-    i_tx_rpc = pyckb.rpc.get_transaction(f'0x{i.previous_output.tx_hash.hex()}')
-    i_tx = pyckb.core.Transaction.json_decode(i_tx_rpc['transaction'])
-    i_output = i_tx.raw.outputs[i.previous_output.index]
-    i_data = i_tx.raw.outputs_data[i.previous_output.index]
-    i_header = i_tx_rpc['tx_status']['block_hash']
-    tx_mock['mock_info']['inputs'].append({
-        'input': i.json(),
-        'output': i_output.json(),
-        'data': f'0x{i_data.hex()}',
-        'header': i_header,
+mock = {'cell_deps': [], 'header_deps': [], 'inputs': []}
+deps = tx.raw.cell_deps.copy()
+for e in [e for e in tx.raw.cell_deps if e.dep_type == 1]:
+    origin = pyckb.rpc.get_transaction(f'0x{e.out_point.tx_hash.hex()}')
+    origin = pyckb.core.Transaction.json_decode(origin['transaction'])
+    data = origin.raw.outputs_data[e.out_point.index]
+    outs = [pyckb.core.OutPoint.molecule_decode(e) for e in pyckb.molecule.decode_fixvec(data)]
+    deps.extend([pyckb.core.CellDep(e, 0) for e in outs])
+for e in deps:
+    origin = pyckb.rpc.get_transaction(f'0x{e.out_point.tx_hash.hex()}')
+    header = origin['tx_status']['block_hash']
+    origin = pyckb.core.Transaction.json_decode(origin['transaction'])
+    output = origin.raw.outputs[e.out_point.index]
+    data = origin.raw.outputs_data[e.out_point.index]
+    mock['cell_deps'].append({
+        'cell_dep': e.json(),
+        'header': header,
+        'data': f'0x{data.hex()}',
+        'output': output.json(),
     })
-for c in tx.raw.cell_deps:
-    c_tx_rpc = pyckb.rpc.get_transaction(f'0x{c.out_point.tx_hash.hex()}')
-    c_tx = pyckb.core.Transaction.json_decode(c_tx_rpc['transaction'])
-    c_output = c_tx.raw.outputs[c.out_point.index]
-    c_data = c_tx.raw.outputs_data[c.out_point.index]
-    c_header = c_tx_rpc['tx_status']['block_hash']
-    tx_mock['mock_info']['cell_deps'].append({
-        'cell_dep': c.json(),
-        'output': c_output.json(),
-        'data': f'0x{c_data.hex()}',
-        'header': c_header,
-    })
-for i in range(len(tx.raw.cell_deps)):
-    c = tx.raw.cell_deps[i]
-    if c.dep_type != 1:
-        continue
-    c_data = bytearray.fromhex(tx_mock['mock_info']['cell_deps'][i]['data'][2:])
-    for e in pyckb.molecule.decode_fixvec(c_data):
-        d = pyckb.core.OutPoint.molecule_decode(e)
-        d_tx_rpc = pyckb.rpc.get_transaction(f'0x{d.tx_hash.hex()}')
-        d_tx = pyckb.core.Transaction.json_decode(d_tx_rpc['transaction'])
-        d_output = d_tx.raw.outputs[d.index]
-        d_data = d_tx.raw.outputs_data[d.index]
-        d_header = d_tx_rpc['tx_status']['block_hash']
-        tx_mock['mock_info']['cell_deps'].append({
-            'cell_dep': pyckb.core.CellDep(d, 0).json(),
-            'output': d_output.json(),
-            'data': f'0x{d_data.hex()}',
-            'header': d_header,
-        })
 for h in tx.raw.header_deps:
-    h_rpc = pyckb.rpc.get_header(f'0x{h.hex()}')
-    tx_mock['mock_info']['header_deps'].append(h_rpc)
+    header = pyckb.rpc.get_header(f'0x{h.hex()}')
+    mock['header_deps'].append(header)
+for e in tx.raw.inputs:
+    origin = pyckb.rpc.get_transaction(f'0x{e.previous_output.tx_hash.hex()}')
+    header = origin['tx_status']['block_hash']
+    origin = pyckb.core.Transaction.json_decode(origin['transaction'])
+    output = origin.raw.outputs[e.previous_output.index]
+    data = origin.raw.outputs_data[e.previous_output.index]
+    mock['inputs'].append({
+        'input': e.json(),
+        'output': output.json(),
+        'data': f'0x{data.hex()}',
+        'header': header,
+    })
 
-print(json.dumps(tx_mock, indent=4))
+print(json.dumps({'mock_info': mock, 'tx': tx.json()}, indent=4))
