@@ -86,6 +86,17 @@ Dump full transaction data for ckb-debugger to use.
 $ python example/txdump.py --net testnet --hash 0x123b09a89e65cc9c375dab739c9c921f7067d0b205e563135bb5a1221f8948d9
 ```
 
+**example/unittest.py**
+
+Pyckb provides a unit testing framework to help script developers test their scripts. To use this framework, you need to install ckb-debugger first. This example tests an always success script.
+
+```sh
+$ python example/unittest.py
+
+# Run result: 0
+# All cycles: 539
+```
+
 ## Test
 
 ```sh
