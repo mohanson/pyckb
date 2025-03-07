@@ -27,11 +27,11 @@ class PriKey:
     def __init__(self, n: int) -> None:
         self.n = n
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return self.n == other.n
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -64,14 +64,14 @@ class PubKey:
         self.x = x
         self.y = y
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.x == other.x,
             self.y == other.y,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -126,15 +126,15 @@ class Script:
         self.hash_type = hash_type
         self.args = args
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.code_hash == other.code_hash,
             self.hash_type == other.hash_type,
             self.args == other.args,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def addr(self) -> str:
         # See: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
@@ -259,14 +259,14 @@ class CellInput:
         self.since = since
         self.previous_output = previous_output
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.since == other.since,
             self.previous_output == other.previous_output,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -309,15 +309,15 @@ class CellOutput:
         self.lock = lock
         self.type = type
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.capacity == other.capacity,
             self.lock == other.lock,
             self.type == other.type,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -356,14 +356,14 @@ class CellDep:
         self.out_point = out_point
         self.dep_type = dep_type
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.out_point == other.out_point,
             self.dep_type == other.dep_type,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     @classmethod
     def conf_decode(cls, data: typing.Dict) -> typing.Self:
@@ -421,9 +421,6 @@ class RawTransaction:
         self.outputs = outputs
         self.outputs_data = outputs_data
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.version == other.version,
@@ -433,6 +430,9 @@ class RawTransaction:
             self.outputs == other.outputs,
             self.outputs_data == other.outputs_data,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def hash(self) -> bytearray:
         return hash(self.molecule())
@@ -562,15 +562,15 @@ class WitnessArgs:
         self.input_type = input_type
         self.output_type = output_type
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.lock == other.lock,
             self.input_type == other.input_type,
             self.output_type == other.output_type,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -621,9 +621,6 @@ class RawHeader:
         self.extra_hash = extra_hash
         self.dao = dao
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.version == other.version,
@@ -637,6 +634,9 @@ class RawHeader:
             self.extra_hash == other.extra_hash,
             self.dao == other.dao,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -729,14 +729,14 @@ class Header:
         self.raw = raw
         self.nonce = nonce
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.raw == other.raw,
             self.nonce == other.nonce,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def hash(self) -> bytearray:
         return hash(self.molecule())
@@ -799,14 +799,14 @@ class UncleBlock:
         self.header = header
         self.proposals = proposals
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.header == other.header,
             self.proposals == other.proposals,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -849,9 +849,6 @@ class Block:
         self.transactions = transactions
         self.proposals = proposals
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.header == other.header,
@@ -859,6 +856,9 @@ class Block:
             self.transactions == other.transactions,
             self.proposals == other.proposals,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -911,9 +911,6 @@ class BlockV1:
         self.proposals = proposals
         self.extension = extension
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.header == other.header,
@@ -922,6 +919,9 @@ class BlockV1:
             self.proposals == other.proposals,
             self.extension == other.extension,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
@@ -968,14 +968,14 @@ class CellbaseWitness:
         self.lock = lock
         self.message = message
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other: typing.Self) -> bool:
         return all([
             self.lock == other.lock,
             self.message == other.message,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {
