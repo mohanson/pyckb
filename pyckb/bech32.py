@@ -131,15 +131,15 @@ def bech32_encode(hrp: str, ver: int, data: bytearray) -> str:
     return hrp + '1' + ''.join([CHARSET[d] for d in datasum])
 
 
-def decode(hrp: str, addr: str) -> bytearray:
+def decode(hrp: str, ver: int, addr: str) -> bytearray:
     # Decode a segwit address.
-    data = bech32_decode(hrp, 1, addr)
+    data = bech32_decode(hrp, ver, addr)
     return bech32_re_arrange_8(data)
 
 
-def encode(hrp: str, prog: bytearray) -> str:
+def encode(hrp: str, ver: int, prog: bytearray) -> str:
     # Encode a segwit address.
     assert isinstance(prog, bytearray)
-    r = bech32_encode(hrp, 1, bech32_re_arrange_5(prog))
-    assert prog == decode(hrp, r)
+    r = bech32_encode(hrp, ver, bech32_re_arrange_5(prog))
+    assert prog == decode(hrp, ver, r)
     return r

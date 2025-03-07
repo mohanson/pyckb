@@ -145,11 +145,11 @@ class Script:
         payload.extend(self.code_hash)
         payload.append(self.hash_type)
         payload.extend(self.args)
-        return pyckb.bech32.encode(pyckb.config.current.hrp, payload)
+        return pyckb.bech32.encode(pyckb.config.current.hrp, 1, payload)
 
     @classmethod
     def addr_decode(cls, data: str) -> typing.Self:
-        payload = pyckb.bech32.decode(pyckb.config.current.hrp, data)
+        payload = pyckb.bech32.decode(pyckb.config.current.hrp, 1, data)
         assert payload[0] == 0
         code_hash = payload[1:33]
         hash_type = payload[33]
