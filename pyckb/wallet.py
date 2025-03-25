@@ -41,7 +41,9 @@ class WalletTransactionAnalyzer:
             if e.since == 0:
                 continue
             if e.since >> 56 == 0x00:
-                pass
+                current_blocknumber = int(pyckb.rpc.get_tip_block_number(), 16)
+                request_blocknumber = e.since & 0xffffffffffffff
+                assert current_blocknumber >= request_blocknumber
             if e.since >> 56 == 0x20:
                 current_epoch = pyckb.core.epoch_decode(int(pyckb.rpc.get_tip_header()['epoch'], 16))
                 request_epoch = pyckb.core.epoch_decode(e.since & 0xffffffffffffff)
@@ -50,7 +52,9 @@ class WalletTransactionAnalyzer:
                 else:
                     assert current_epoch[0] >= request_epoch[0]
             if e.since >> 56 == 0x60:
-                pass
+                current_timestamp = int(pyckb.rpc.get_tip_header()['timestamp'], 16)
+                request_timestamp = e.since & 0xffffffffffffff
+                assert current_timestamp > request_timestamp
             if e.since >> 56 == 0x80:
                 pass
             if e.since >> 56 == 0xa0:
