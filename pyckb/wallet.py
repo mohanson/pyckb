@@ -19,7 +19,7 @@ class WalletTransactionAnalyzer:
         for e in self.tx.raw.inputs:
             out_point = e.previous_output
             result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-            origin = pyckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
+            origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
             sender_capacity += origin.capacity
         for e in self.tx.raw.outputs:
             output_capacity += e.capacity
@@ -101,7 +101,7 @@ class Wallet:
 
     def livecell(self) -> typing.Generator:
         return pyckb.rpc.get_cells_iter({
-            'script': self.script.json(),
+            'script': self.script.rpc(),
             'script_type': 'lock',
             'filter': {
                 'script_len_range': ['0x0', '0x1']
@@ -110,7 +110,7 @@ class Wallet:
 
     def capacity(self) -> int:
         return int(pyckb.rpc.get_cells_capacity({
-            'script': self.script.json(),
+            'script': self.script.rpc(),
             'script_type': 'lock',
             'filter': {
                 'script_len_range': ['0x0', '0x1']
@@ -133,7 +133,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -146,7 +146,7 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def transfer_all(self, script: pyckb.core.Script) -> bytearray:
@@ -160,7 +160,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -170,7 +170,7 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def script_deploy(self, script: pyckb.core.Script, data: bytearray) -> bytearray:
@@ -187,7 +187,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -200,7 +200,7 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def script_deploy_type_id(self, script: pyckb.core.Script, data: bytearray) -> bytearray:
@@ -218,7 +218,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -233,7 +233,7 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def script_update_type_id(
@@ -243,7 +243,7 @@ class Wallet:
         out_point: pyckb.core.OutPoint
     ) -> bytearray:
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-        origin = pyckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
+        origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == pyckb.core.type_id_code_hash
         assert origin.type.hash_type == pyckb.core.type_id_hash_type
         sender_capacity = origin.capacity
@@ -261,7 +261,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -274,7 +274,7 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def dao_deposit(self, capacity: int) -> bytearray:
@@ -300,7 +300,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 256):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -313,14 +313,14 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def dao_prepare(self, out_point: pyckb.core.OutPoint) -> bytearray:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         number = int(pyckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
-        origin = pyckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
+        origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
@@ -341,7 +341,7 @@ class Wallet:
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
-            cell_out_point = pyckb.core.OutPoint.json_decode(cell['out_point'])
+            cell_out_point = pyckb.core.OutPoint.rpc_decode(cell['out_point'])
             cell_capacity = int(cell['output']['capacity'], 16)
             cell_input = pyckb.core.CellInput(0, cell_out_point)
             sender_capacity += cell_capacity
@@ -354,25 +354,25 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def dao_extract(self, out_point: pyckb.core.OutPoint) -> bytearray:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
-        origin = pyckb.core.CellOutput.json_decode(result['transaction']['outputs'][out_point.index])
+        origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
         assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
         deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
         deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
-        deposit_block_header = pyckb.core.Header.json_decode(pyckb.rpc.get_header_by_number(hex(deposit_block_number)))
+        deposit_block_header = pyckb.core.Header.rpc_decode(pyckb.rpc.get_header_by_number(hex(deposit_block_number)))
         deposit_block_hash = deposit_block_header.hash()
         deposit_block_epoch = pyckb.core.epoch_decode(deposit_block_header.raw.epoch)
         deposit_block_epoch_float = deposit_block_epoch[0] + deposit_block_epoch[1] / deposit_block_epoch[2]
         deposit_dao_ar = pyckb.core.dao_decode(deposit_block_header.raw.dao)[1]
         prepare_block_hash = bytearray.fromhex(result['tx_status']['block_hash'][2:])
-        prepare_block_header = pyckb.core.Header.json_decode(pyckb.rpc.get_header('0x' + prepare_block_hash.hex()))
+        prepare_block_header = pyckb.core.Header.rpc_decode(pyckb.rpc.get_header('0x' + prepare_block_hash.hex()))
         prepare_block_epoch = pyckb.core.epoch_decode(prepare_block_header.raw.epoch)
         prepare_block_epoch_float = prepare_block_epoch[0] + prepare_block_epoch[1] / prepare_block_epoch[2]
         prepare_dao_ar = pyckb.core.dao_decode(prepare_block_header.raw.dao)[1]
@@ -401,31 +401,31 @@ class Wallet:
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, bytearray(8), None).molecule()
         WalletTransactionAnalyzer(tx).analyze()
-        hash = pyckb.rpc.send_transaction(tx.json())
+        hash = pyckb.rpc.send_transaction(tx.rpc())
         return bytearray.fromhex(hash[2:])
 
     def dao_livecell(self) -> typing.Generator:
         return pyckb.rpc.get_cells_iter({
-            'script': self.script.json(),
+            'script': self.script.rpc(),
             'script_type': 'lock',
             'filter': {
                 'script': pyckb.core.Script(
                     pyckb.config.current.script.dao.code_hash,
                     pyckb.config.current.script.dao.hash_type,
                     bytearray(),
-                ).json(),
+                ).rpc(),
             },
         })
 
     def dao_capacity(self) -> int:
         return int(pyckb.rpc.get_cells_capacity({
-            'script': self.script.json(),
+            'script': self.script.rpc(),
             'script_type': 'lock',
             'filter': {
                 'script': pyckb.core.Script(
                     pyckb.config.current.script.dao.code_hash,
                     pyckb.config.current.script.dao.hash_type,
                     bytearray(),
-                ).json(),
+                ).rpc(),
             }
         })['capacity'], 16)

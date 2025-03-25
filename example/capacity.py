@@ -17,7 +17,7 @@ if args.net == 'testnet':
     pyckb.config.current = pyckb.config.testnet
 
 capacity = int(pyckb.rpc.get_cells_capacity({
-    'script': pyckb.core.Script.addr_decode(args.addr).json(),
+    'script': pyckb.core.Script.addr_decode(args.addr).rpc(),
     'script_type': 'lock',
     'filter': {
         'script_len_range': ['0x0', '0x1']

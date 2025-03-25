@@ -12,7 +12,7 @@ def test_get_cells():
         pyckb.config.current.script.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
-    search = {'script': script.json(), 'script_type': 'lock'}
+    search = {'script': script.rpc(), 'script_type': 'lock'}
     assert pyckb.rpc.get_cells(search, 'asc', '0xff', None)['objects'] != []
 
 
@@ -27,7 +27,7 @@ def test_get_cells_capacity():
         pyckb.config.current.script.secp256k1_blake160.hash_type,
         bytearray.fromhex(args)
     )
-    search = {'script': script.json(), 'script_type': 'lock'}
+    search = {'script': script.rpc(), 'script_type': 'lock'}
     assert int(pyckb.rpc.get_cells_capacity(search)['capacity'], 16) >= 0
 
 
@@ -41,7 +41,7 @@ def test_get_header_by_number():
     pyckb.config.upgrade('http://127.0.0.1:8114')
     pyckb.config.current = pyckb.config.develop
     header_json = pyckb.rpc.get_header_by_number('0x1')
-    header = pyckb.core.Header.json_decode(header_json)
+    header = pyckb.core.Header.rpc_decode(header_json)
     assert header.raw.number == 1
     assert header.hash() == bytearray.fromhex(header_json['hash'][2:])
 

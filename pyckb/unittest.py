@@ -80,7 +80,7 @@ class Verifier:
         self.resource = resource
         self.tx = tx
 
-    def json(self) -> typing.Dict:
+    def rpc(self) -> typing.Dict:
         # Generate a json representation of the transaction with mock data for debugging.
         mock = {'cell_deps': [], 'header_deps': [], 'inputs': []}
         # Add cell dependencies to the mock info.
@@ -93,19 +93,19 @@ class Verifier:
         for e in deps:
             cell = self.resource.cell[e.out_point]
             mock['cell_deps'].append({
-                'cell_dep': e.json(),
-                'output': cell.cell_ouput.json(),
+                'cell_dep': e.rpc(),
+                'output': cell.cell_ouput.rpc(),
                 'data': f'0x{cell.data.hex()}',
             })
         # Add inputs to the mock info.
         for e in self.tx.raw.inputs:
             cell = self.resource.cell[e.previous_output]
             mock['inputs'].append({
-                'input': e.json(),
-                'output': cell.cell_ouput.json(),
+                'input': e.rpc(),
+                'output': cell.cell_ouput.rpc(),
                 'data': f'0x{cell.data.hex()}',
             })
-        return {'mock_info': mock, 'tx': self.tx.json()}
+        return {'mock_info': mock, 'tx': self.tx.rpc()}
 
     def verify_success(self) -> None:
         # Verify that the transaction succeeds (all scripts return 0x00).
@@ -117,7 +117,7 @@ class Verifier:
 
     def verify(self) -> typing.List[subprocess.CompletedProcess[bytes]]:
         # Run the ckb-debugger on each script in the transaction and collect results.
-        txfile = json.dumps(self.json()).encode()
+        txfile = json.dumps(self.rpc()).encode()
         result = []
         for i, e in enumerate(self.tx.raw.inputs):
             cell = self.resource.cell[e.previous_output]

@@ -26,9 +26,9 @@ hole = pyckb.core.Script(
 
 with open(args.file, 'rb') as f:
     data = f.read()
-    print(f'script.code_hash = 0x{pyckb.core.hash(data).hex()}')
+    print(f'script.code_hash = {pyckb.core.hash(data).hex()}')
     print(f'script.hash_type = 2(data1)')
     hash = user.script_deploy(hole, data)
-    print(f'out_point.hash   = 0x{hash.hex()}')
+    print(f'out_point.hash   = {hash.hex()}')
     print(f'out_point.index  = 0')
     pyckb.rpc.wait(f'0x{hash.hex()}')
