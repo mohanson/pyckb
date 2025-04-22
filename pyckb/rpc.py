@@ -1,6 +1,5 @@
 import itertools
 import pyckb.config
-import pyckb.core
 import random
 import requests
 import time
