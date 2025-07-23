@@ -5,6 +5,7 @@ import pyckb.config
 import pyckb.ecdsa
 import pyckb.molecule
 import pyckb.secp256k1
+import secrets
 import typing
 
 # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md
@@ -49,6 +50,10 @@ class PriKey:
     def pubkey(self):
         pubkey = pyckb.secp256k1.G * pyckb.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
+
+    @classmethod
+    def random(cls) -> typing.Self:
+        return PriKey(max(1, secrets.randbelow(pyckb.secp256k1.N)))
 
     def sign(self, data: bytearray) -> bytearray:
         assert len(data) == 32

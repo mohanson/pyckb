@@ -1,6 +1,6 @@
 import itertools
 import pyckb.secp256k1
-import random
+import secrets
 import typing
 
 
@@ -8,7 +8,7 @@ def sign(prikey: pyckb.secp256k1.Fr, m: pyckb.secp256k1.Fr) -> typing.Tuple[pyck
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.3 Signing Operation
     for _ in itertools.repeat(0):
-        k = pyckb.secp256k1.Fr(random.randint(0, pyckb.secp256k1.N - 1))
+        k = pyckb.secp256k1.Fr(max(1, secrets.randbelow(pyckb.secp256k1.N)))
         R = pyckb.secp256k1.G * k
         r = pyckb.secp256k1.Fr(R.x.x)
         if r.x == 0:

@@ -1,8 +1,8 @@
 import argparse
 import pyckb
 import itertools
-import random
 import requests
+import secrets
 import time
 
 # This script generates a random address to request ckb from the faucet, and transfers the obtained ckb to the
@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--addr', type=str, help='ckb address')
 args = parser.parse_args()
 
-kana = pyckb.wallet.Wallet(random.randint(0, pyckb.secp256k1.N - 1))
+kana = pyckb.wallet.Wallet(max(1, secrets.randbelow(pyckb.secp256k1.N)))
 resp = requests.post('https://faucet-api.nervos.org/claim_events', json={
     'claim_event': {
         'address_hash': kana.addr,
