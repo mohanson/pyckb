@@ -16,7 +16,11 @@ class ObjectDict(dict):
 
 develop = ObjectDict({
     'hrp': 'ckt',
-    'url': 'http://127.0.0.1:8114',
+    'rpc': ObjectDict({
+        'url': 'http://127.0.0.1:8114',
+        # Rate limit per second.
+        'qps': 32,
+    }),
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
@@ -45,8 +49,11 @@ develop = ObjectDict({
 
 mainnet = ObjectDict({
     'hrp': 'ckb',
-    # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
-    'url': 'https://mainnet.ckbapp.dev',
+    'rpc': ObjectDict({
+        # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
+        'url': 'https://mainnet.ckbapp.dev',
+        'qps': 4,
+    }),
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
@@ -75,8 +82,11 @@ mainnet = ObjectDict({
 
 testnet = ObjectDict({
     'hrp': 'ckt',
-    # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
-    'url': 'https://testnet.ckbapp.dev',
+    'rpc': ObjectDict({
+        # https://github.com/nervosnetwork/ckb/wiki/Public-JSON-RPC-nodes
+        'url': 'https://testnet.ckbapp.dev',
+        'qps': 4,
+    }),
     'script': ObjectDict({
         'dao': ObjectDict({
             'code_hash': bytearray.fromhex('82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e'),
@@ -112,7 +122,7 @@ def upgrade(url: str):
         'params': ['0x0']
     })
     t = r.json()['result']['transactions']
-    develop.url = url
+    develop.rpc.url = url
     develop.script.dao.cell_dep.out_point.tx_hash = bytearray.fromhex(t[0]['hash'][2:])
     develop.script.secp256k1_blake160.cell_dep.out_point.tx_hash = bytearray.fromhex(t[1]['hash'][2:])
 

@@ -1,15 +1,17 @@
 import itertools
 import pyckb.config
+import pyckb.rate
 import random
 import requests
-import time
 import typing
 
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 
 
 def call(method: str, params: typing.List) -> typing.Any:
-    r = requests.post(pyckb.config.current.url, json={
+    call.rate = getattr(call, 'rate', pyckb.rate.Limits(pyckb.config.current.rpc.qps, 1))
+    call.rate.wait(1)
+    r = requests.post(pyckb.config.current.rpc.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
         'method': method,
@@ -20,9 +22,8 @@ def call(method: str, params: typing.List) -> typing.Any:
     return r['result']
 
 
-def wait(hash: str):
+def wait(hash: str) -> None:
     for _ in itertools.repeat(0):
-        time.sleep(1)
         r = get_transaction(hash)
         if r['tx_status']['status'] == 'committed':
             break
