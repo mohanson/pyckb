@@ -137,7 +137,7 @@ class U32:
         return self.data == other.data
 
     def molecule(self) -> bytearray:
-        return self.data.to_bytes(4, 'little')
+        return bytearray(self.data.to_bytes(4, 'little'))
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> int:
@@ -157,7 +157,7 @@ class U64:
         return self.data == other.data
 
     def molecule(self) -> bytearray:
-        return self.data.to_bytes(8, 'little')
+        return bytearray(self.data.to_bytes(8, 'little'))
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> int:
@@ -177,7 +177,7 @@ class U128:
         return self.data == other.data
 
     def molecule(self) -> bytearray:
-        return self.data.to_bytes(16, 'little')
+        return bytearray(self.data.to_bytes(16, 'little'))
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> int:
