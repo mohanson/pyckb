@@ -172,20 +172,20 @@ class Script:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
-            pyckb.molecule.Byte32(self.code_hash).molecule(),
-            pyckb.molecule.Byte(self.hash_type).molecule(),
-            pyckb.molecule.Bytes(self.args).molecule()
-        ])
+        return pyckb.molecule.Table([
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte,
+            pyckb.molecule.Bytes,
+        ]).encode([self.code_hash, self.hash_type, self.args])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
-        return Script(
-            pyckb.molecule.Byte32.molecule_decode(result[0]),
-            pyckb.molecule.Byte.molecule_decode(result[1]),
-            pyckb.molecule.Bytes.molecule_decode(result[2]),
-        )
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte,
+            pyckb.molecule.Bytes,
+        ]).decode(data)
+        return Script(result[0], result[1], result[2])
 
     def rpc(self) -> typing.Dict:
         return {
@@ -238,25 +238,22 @@ class OutPoint:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_seq([
-            pyckb.molecule.Byte32(self.tx_hash).molecule(),
-            pyckb.molecule.U32(self.index).molecule(),
-        ])
+        return pyckb.molecule.Struct([
+            pyckb.molecule.Byte32,
+            pyckb.molecule.U32,
+        ]).encode([self.tx_hash, self.index])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_seq(data, [
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.U32.molecule_size(),
-        ])
-        return OutPoint(
-            pyckb.molecule.Byte32.molecule_decode(result[0]),
-            pyckb.molecule.U32.molecule_decode(result[1])
-        )
+        result = pyckb.molecule.Struct([
+            pyckb.molecule.Byte32,
+            pyckb.molecule.U32,
+        ]).decode(data)
+        return OutPoint(result[0], result[1])
 
     @classmethod
     def molecule_size(cls) -> int:
-        return pyckb.molecule.Byte32.molecule_size() + pyckb.molecule.U32.molecule_size()
+        return pyckb.molecule.Byte32.size() + pyckb.molecule.U32.size()
 
     def rpc(self) -> typing.Dict:
         return {
@@ -293,25 +290,22 @@ class CellInput:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_seq([
-            pyckb.molecule.U64(self.since).molecule(),
-            self.previous_output.molecule(),
-        ])
+        return pyckb.molecule.Struct([
+            pyckb.molecule.U64,
+            pyckb.molecule.Sized(OutPoint.molecule_size())
+        ]).encode([self.since, self.previous_output.molecule()])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_seq(data, [
-            pyckb.molecule.U64.molecule_size(),
-            OutPoint.molecule_size(),
-        ])
-        return CellInput(
-            pyckb.molecule.U64.molecule_decode(result[0]),
-            OutPoint.molecule_decode(result[1]),
-        )
+        result = pyckb.molecule.Struct([
+            pyckb.molecule.U64,
+            pyckb.molecule.Sized(OutPoint.molecule_size())
+        ]).decode(data)
+        return CellInput(result[0], OutPoint.molecule_decode(result[1]))
 
     @classmethod
     def molecule_size(cls) -> int:
-        return pyckb.molecule.U64.molecule_size() + OutPoint.molecule_size()
+        return pyckb.molecule.U64.size() + OutPoint.molecule_size()
 
     def rpc(self) -> typing.Dict:
         return {
@@ -351,17 +345,25 @@ class CellOutput:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
-            pyckb.molecule.U64(self.capacity).molecule(),
+        return pyckb.molecule.Table([
+            pyckb.molecule.U64,
+            pyckb.molecule.Field,
+            pyckb.molecule.Field,
+        ]).encode([
+            self.capacity,
             self.lock.molecule(),
             self.type.molecule() if self.type else bytearray(),
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.U64,
+            pyckb.molecule.Field,
+            pyckb.molecule.Field,
+        ]).decode(data)
         return CellOutput(
-            pyckb.molecule.U64.molecule_decode(result[0]),
+            result[0],
             Script.molecule_decode(result[1]),
             Script.molecule_decode(result[2]) if result[2] else None
         )
@@ -407,25 +409,25 @@ class CellDep:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_seq([
-            self.out_point.molecule(),
-            pyckb.molecule.Byte(self.dep_type).molecule(),
-        ])
+        return pyckb.molecule.Struct([
+            pyckb.molecule.Sized(OutPoint.molecule_size()),
+            pyckb.molecule.Byte,
+        ]).encode([self.out_point.molecule(), self.dep_type])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_seq(data, [
-            OutPoint.molecule_size(),
-            pyckb.molecule.Byte.molecule_size(),
-        ])
+        result = pyckb.molecule.Struct([
+            pyckb.molecule.Sized(OutPoint.molecule_size()),
+            pyckb.molecule.Byte,
+        ]).decode(data)
         return CellDep(
             OutPoint.molecule_decode(result[0]),
-            pyckb.molecule.Byte.molecule_decode(result[1]),
+            result[1],
         )
 
     @classmethod
     def molecule_size(cls) -> int:
-        return OutPoint.molecule_size() + pyckb.molecule.Byte.molecule_size()
+        return OutPoint.molecule_size() + pyckb.molecule.Byte.size()
 
     def rpc(self) -> typing.Dict:
         return {
@@ -445,11 +447,11 @@ class RawTransaction:
     def __init__(
         self,
         version: int,
-        cell_deps: list[CellDep],
-        header_deps: list[bytearray],
-        inputs: list[CellInput],
-        outputs: list[CellOutput],
-        outputs_data: list[bytearray]
+        cell_deps: typing.List[CellDep],
+        header_deps: typing.List[bytearray],
+        inputs: typing.List[CellInput],
+        outputs: typing.List[CellOutput],
+        outputs_data: typing.List[bytearray]
     ) -> None:
         self.version = version
         self.cell_deps = cell_deps
@@ -485,25 +487,39 @@ class RawTransaction:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
-            pyckb.molecule.U32(self.version).molecule(),
-            pyckb.molecule.encode_fixvec([e.molecule() for e in self.cell_deps]),
-            pyckb.molecule.encode_fixvec([pyckb.molecule.Byte32(e).molecule() for e in self.header_deps]),
-            pyckb.molecule.encode_fixvec([e.molecule() for e in self.inputs]),
-            pyckb.molecule.encode_dynvec([e.molecule() for e in self.outputs]),
-            pyckb.molecule.encode_dynvec([pyckb.molecule.Bytes(e).molecule() for e in self.outputs_data])
+        return pyckb.molecule.Table([
+            pyckb.molecule.U32,
+            pyckb.molecule.Slice(pyckb.molecule.Sized(CellDep.molecule_size())),
+            pyckb.molecule.Slice(pyckb.molecule.Byte32),
+            pyckb.molecule.Slice(pyckb.molecule.Sized(CellInput.molecule_size())),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).encode([
+            self.version,
+            [e.molecule() for e in self.cell_deps],
+            self.header_deps,
+            [e.molecule() for e in self.inputs],
+            [e.molecule() for e in self.outputs],
+            self.outputs_data,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.U32,
+            pyckb.molecule.Slice(pyckb.molecule.Sized(CellDep.molecule_size())),
+            pyckb.molecule.Slice(pyckb.molecule.Byte32),
+            pyckb.molecule.Slice(pyckb.molecule.Sized(CellInput.molecule_size())),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).decode(data)
         return RawTransaction(
-            pyckb.molecule.U32.molecule_decode(result[0]),
-            [CellDep.molecule_decode(e) for e in pyckb.molecule.decode_fixvec(result[1])],
-            [pyckb.molecule.Byte32.molecule_decode(e) for e in pyckb.molecule.decode_fixvec(result[2])],
-            [CellInput.molecule_decode(e) for e in pyckb.molecule.decode_fixvec(result[3])],
-            [CellOutput.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[4])],
-            [pyckb.molecule.Bytes.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[5])]
+            result[0],
+            [CellDep.molecule_decode(e) for e in result[1]],
+            result[2],
+            [CellInput.molecule_decode(e) for e in result[3]],
+            [CellOutput.molecule_decode(e) for e in result[4]],
+            result[5],
         )
 
     def rpc(self) -> typing.Dict:
@@ -529,7 +545,7 @@ class RawTransaction:
 
 
 class Transaction:
-    def __init__(self, raw: RawTransaction, witnesses: list[bytearray]) -> None:
+    def __init__(self, raw: RawTransaction, witnesses: typing.List[bytearray]) -> None:
         self.raw = raw
         self.witnesses = witnesses
 
@@ -568,17 +584,20 @@ class Transaction:
         return r
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
-            self.raw.molecule(),
-            pyckb.molecule.encode_dynvec([pyckb.molecule.Bytes(e).molecule() for e in self.witnesses])
-        ])
+        return pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).encode([self.raw.molecule(), self.witnesses])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).decode(data)
         return Transaction(
             RawTransaction.molecule_decode(result[0]),
-            [pyckb.molecule.Bytes.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[1])],
+            result[1],
         )
 
     def rpc(self) -> typing.Dict:
@@ -632,20 +651,20 @@ class WitnessArgs:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
-            pyckb.molecule.Bytes(self.lock).molecule() if self.lock else bytearray(),
-            pyckb.molecule.Bytes(self.input_type).molecule() if self.input_type else bytearray(),
-            pyckb.molecule.Bytes(self.output_type).molecule() if self.output_type else bytearray(),
-        ])
+        return pyckb.molecule.Table([
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+        ]).encode([self.lock, self.input_type, self.output_type])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
-        return WitnessArgs(
-            pyckb.molecule.Bytes.molecule_decode(result[0]) if result[0] else None,
-            pyckb.molecule.Bytes.molecule_decode(result[1]) if result[1] else None,
-            pyckb.molecule.Bytes.molecule_decode(result[2]) if result[2] else None,
-        )
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+            pyckb.molecule.Option(pyckb.molecule.Bytes),
+        ]).decode(data)
+        return WitnessArgs(result[0], result[1], result[2])
 
 
 class RawHeader:
@@ -705,59 +724,59 @@ class RawHeader:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_seq([
-            pyckb.molecule.U32(self.version).molecule(),
-            pyckb.molecule.U32(self.compact_target).molecule(),
-            pyckb.molecule.U64(self.timestamp).molecule(),
-            pyckb.molecule.U64(self.number).molecule(),
-            pyckb.molecule.U64(self.epoch).molecule(),
-            pyckb.molecule.Byte32(self.parent_hash).molecule(),
-            pyckb.molecule.Byte32(self.transactions_root).molecule(),
-            pyckb.molecule.Byte32(self.proposals_hash).molecule(),
-            pyckb.molecule.Byte32(self.extra_hash).molecule(),
-            pyckb.molecule.Byte32(self.dao).molecule(),
+        return pyckb.molecule.Struct([
+            pyckb.molecule.U32,
+            pyckb.molecule.U32,
+            pyckb.molecule.U64,
+            pyckb.molecule.U64,
+            pyckb.molecule.U64,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+        ]).encode([
+            self.version,
+            self.compact_target,
+            self.timestamp,
+            self.number,
+            self.epoch,
+            self.parent_hash,
+            self.transactions_root,
+            self.proposals_hash,
+            self.extra_hash,
+            self.dao,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_seq(data, [
-            pyckb.molecule.U32.molecule_size(),
-            pyckb.molecule.U32.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-        ])
-        return RawHeader(
-            pyckb.molecule.U32.molecule_decode(result[0]),
-            pyckb.molecule.U32.molecule_decode(result[1]),
-            pyckb.molecule.U64.molecule_decode(result[2]),
-            pyckb.molecule.U64.molecule_decode(result[3]),
-            pyckb.molecule.U64.molecule_decode(result[4]),
-            pyckb.molecule.Byte32.molecule_decode(result[5]),
-            pyckb.molecule.Byte32.molecule_decode(result[6]),
-            pyckb.molecule.Byte32.molecule_decode(result[7]),
-            pyckb.molecule.Byte32.molecule_decode(result[8]),
-            pyckb.molecule.Byte32.molecule_decode(result[9]),
-        )
+        result = pyckb.molecule.Struct([
+            pyckb.molecule.U32,
+            pyckb.molecule.U32,
+            pyckb.molecule.U64,
+            pyckb.molecule.U64,
+            pyckb.molecule.U64,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+            pyckb.molecule.Byte32,
+        ]).decode(data)
+        return RawHeader(*result)
 
     @classmethod
     def molecule_size(cls) -> int:
         return sum([
-            pyckb.molecule.U32.molecule_size(),
-            pyckb.molecule.U32.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.U64.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
-            pyckb.molecule.Byte32.molecule_size(),
+            pyckb.molecule.U32.size(),
+            pyckb.molecule.U32.size(),
+            pyckb.molecule.U64.size(),
+            pyckb.molecule.U64.size(),
+            pyckb.molecule.U64.size(),
+            pyckb.molecule.Byte32.size(),
+            pyckb.molecule.Byte32.size(),
+            pyckb.molecule.Byte32.size(),
+            pyckb.molecule.Byte32.size(),
+            pyckb.molecule.Byte32.size(),
         ])
 
     def rpc(self) -> typing.Dict:
@@ -813,25 +832,22 @@ class Header:
         return r
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_seq([
-            self.raw.molecule(),
-            pyckb.molecule.U128(self.nonce).molecule(),
-        ])
+        return pyckb.molecule.Struct([
+            pyckb.molecule.Sized(RawHeader.molecule_size()),
+            pyckb.molecule.U128,
+        ]).encode([self.raw.molecule(), self.nonce])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_seq(data, [
-            RawHeader.molecule_size(),
-            pyckb.molecule.U128.molecule_size(),
-        ])
-        return Header(
-            RawHeader.molecule_decode(result[0]),
-            pyckb.molecule.U128.molecule_decode(result[1]),
-        )
+        result = pyckb.molecule.Struct([
+            pyckb.molecule.Sized(RawHeader.molecule_size()),
+            pyckb.molecule.U128,
+        ]).decode(data)
+        return Header(RawHeader.molecule_decode(result[0]), result[1])
 
     @classmethod
     def molecule_size(cls) -> int:
-        return RawHeader.molecule_size() + pyckb.molecule.U128.molecule_size()
+        return RawHeader.molecule_size() + pyckb.molecule.U128.size()
 
     def rpc(self) -> typing.Dict:
         r = self.raw.rpc()
@@ -886,17 +902,23 @@ class UncleBlock:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
+        return pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).encode([
             self.header.molecule(),
-            pyckb.molecule.encode_fixvec(self.proposals),
+            self.proposals,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Bytes),
+        ]).decode(data)
         return UncleBlock(
             Header.molecule_decode(result[0]),
-            pyckb.molecule.decode_fixvec(result[1]),
+            result[1],
         )
 
     def rpc(self) -> typing.Dict:
@@ -946,21 +968,31 @@ class Block:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
+        return pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Slice(pyckb.molecule.Byte10),
+        ]).encode([
             self.header.molecule(),
-            pyckb.molecule.encode_dynvec([e.molecule() for e in self.uncles]),
-            pyckb.molecule.encode_dynvec([e.molecule() for e in self.transactions]),
-            pyckb.molecule.encode_fixvec(self.proposals),
+            [e.molecule() for e in self.uncles],
+            [e.molecule() for e in self.transactions],
+            self.proposals,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Slice(pyckb.molecule.Byte10),
+        ]).decode(data)
         return Block(
             Header.molecule_decode(result[0]),
-            [UncleBlock.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[1])],
-            [Transaction.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[2])],
-            pyckb.molecule.decode_fixvec(result[3]),
+            [UncleBlock.molecule_decode(e) for e in result[1]],
+            [Transaction.molecule_decode(e) for e in result[2]],
+            result[3],
         )
 
     def rpc(self) -> typing.Dict:
@@ -1018,23 +1050,35 @@ class BlockV1:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
+        return pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Slice(pyckb.molecule.Byte10),
+            pyckb.molecule.Bytes,
+        ]).encode([
             self.header.molecule(),
-            pyckb.molecule.encode_dynvec([e.molecule() for e in self.uncles]),
-            pyckb.molecule.encode_dynvec([e.molecule() for e in self.transactions]),
-            pyckb.molecule.encode_fixvec(self.proposals),
-            pyckb.molecule.Bytes(self.extension).molecule(),
+            [e.molecule() for e in self.uncles],
+            [e.molecule() for e in self.transactions],
+            self.proposals,
+            self.extension,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Scale(pyckb.molecule.Field),
+            pyckb.molecule.Slice(pyckb.molecule.Byte10),
+            pyckb.molecule.Bytes,
+        ]).decode(data)
         return BlockV1(
             Header.molecule_decode(result[0]),
-            [UncleBlock.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[1])],
-            [Transaction.molecule_decode(e) for e in pyckb.molecule.decode_dynvec(result[2])],
-            pyckb.molecule.decode_fixvec(result[3]),
-            pyckb.molecule.Bytes.molecule_decode(result[4]),
+            [UncleBlock.molecule_decode(e) for e in result[1]],
+            [Transaction.molecule_decode(e) for e in result[2]],
+            result[3],
+            result[4],
         )
 
     def rpc(self) -> typing.Dict:
@@ -1078,17 +1122,23 @@ class CellbaseWitness:
         }
 
     def molecule(self) -> bytearray:
-        return pyckb.molecule.encode_dynvec([
+        return pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Bytes,
+        ]).encode([
             self.lock.molecule(),
-            pyckb.molecule.Bytes(self.message).molecule(),
+            self.message,
         ])
 
     @classmethod
     def molecule_decode(cls, data: bytearray) -> typing.Self:
-        result = pyckb.molecule.decode_dynvec(data)
+        result = pyckb.molecule.Table([
+            pyckb.molecule.Field,
+            pyckb.molecule.Bytes,
+        ]).decode(data)
         return CellbaseWitness(
             Script.molecule_decode(result[0]),
-            pyckb.molecule.Bytes.molecule_decode(result[1]),
+            result[1],
         )
 
     def rpc(self) -> typing.Dict:

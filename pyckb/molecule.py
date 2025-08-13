@@ -1,188 +1,351 @@
 # Doc: https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0008-serialization/0008-serialization.md
+import itertools
+import struct
 import typing
 
 
-def decode_dynvec(data: bytearray) -> typing.List[bytearray]:
-    assert len(data) >= 4
-    assert len(data) == int.from_bytes(data[0:4], 'little')
-    if len(data) == 4:
-        return []
-    nums = int.from_bytes(data[4:8], 'little') // 4 - 1
-    head = []
-    for i in range(nums):
-        head.append(int.from_bytes(data[i * 4 + 4: i * 4 + 8], 'little'))
-    head.append(len(data))
-    body = []
-    for i in range(nums):
-        body.append(data[head[i]:head[i+1]])
-    return body
-
-
-def decode_fixvec(data: bytearray) -> typing.List[bytearray]:
-    assert len(data) >= 4
-    icnt = int.from_bytes(data[0:4], 'little')
-    body = []
-    if icnt > 0:
-        size = len(data[4:]) // icnt
-        for i in range(icnt):
-            body.append(data[4+i*size:4+i*size+size])
-    return body
-
-
-def decode_seq(data: bytearray, size: list[int]) -> typing.List[bytearray]:
-    r = []
-    s = 0
-    for n in size:
-        r.append(data[s:s+n])
-        s += n
-    return r
-
-
-def encode_dynvec(data: list[bytearray]) -> bytearray:
-    head = bytearray()
-    body = bytearray()
-    head_size = 4 + 4 * len(data)
-    body_size = 0
-    for item in data:
-        size = head_size + body_size
-        head.extend(bytearray(size.to_bytes(4, 'little')))
-        body.extend(item)
-        body_size += len(item)
-    size = head_size + body_size
-    return bytearray(size.to_bytes(4, 'little')) + head + body
-
-
-def encode_fixvec(data: list[bytearray]) -> bytearray:
-    r = bytearray()
-    r.extend(len(data).to_bytes(4, 'little'))
-    for e in data:
-        r.extend(e)
-    return r
-
-
-def encode_seq(data: list[bytearray]) -> bytearray:
-    r = bytearray()
-    for e in data:
-        r.extend(e)
-    return r
-
-
-class Byte:
-    def __init__(self, data: int) -> None:
-        assert 0 <= data and data <= 0xff
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        return bytearray([self.data])
+class U8:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little')
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> int:
-        assert len(data) == 1
-        return data[0]
+    def encode(cls, number: int) -> bytearray:
+        assert number >= 0x00
+        assert number <= 0xff
+        return bytearray(number.to_bytes(1, 'little'))
 
     @classmethod
-    def molecule_size(cls) -> int:
+    def size(cls) -> int:
         return 1
 
 
-class Byte32:
-    def __init__(self, data: bytearray) -> None:
-        assert len(data) == 32
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        return self.data
+class U16:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little')
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> bytearray:
-        return data
+    def encode(cls, number: int) -> bytearray:
+        assert number >= 0x00
+        assert number <= 0xffff
+        return bytearray(number.to_bytes(2, 'little'))
 
     @classmethod
-    def molecule_size(cls) -> int:
-        return 32
-
-
-class Bytes:
-    def __init__(self, data: bytearray) -> None:
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        r = bytearray()
-        r.extend(len(self.data).to_bytes(4, 'little'))
-        r.extend(self.data)
-        return r
-
-    @classmethod
-    def molecule_decode(cls, data: bytearray) -> bytearray:
-        l = int.from_bytes(data[:4], 'little')
-        assert l == len(data) - 4
-        return data[4:]
+    def size(cls) -> int:
+        return 2
 
 
 class U32:
-    def __init__(self, data: int) -> None:
-        assert 0 <= data and data <= 0xffffffff
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        return bytearray(self.data.to_bytes(4, 'little'))
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little')
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> int:
-        return int.from_bytes(data, 'little')
+    def encode(cls, number: int) -> bytearray:
+        assert number >= 0x00
+        assert number <= 0xffffffff
+        return bytearray(number.to_bytes(4, 'little'))
 
     @classmethod
-    def molecule_size(cls) -> int:
+    def size(cls) -> int:
         return 4
 
 
 class U64:
-    def __init__(self, data: int) -> None:
-        assert 0 <= data and data <= 0xffffffffffffffff
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        return bytearray(self.data.to_bytes(8, 'little'))
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little')
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> int:
-        return int.from_bytes(data, 'little')
+    def encode(cls, number: int) -> bytearray:
+        assert number >= 0x00
+        assert number <= 0xffffffffffffffff
+        return bytearray(number.to_bytes(8, 'little'))
 
     @classmethod
-    def molecule_size(cls) -> int:
+    def size(cls) -> int:
         return 8
 
 
 class U128:
-    def __init__(self, data: int) -> None:
-        assert 0 <= data and data <= 0xffffffffffffffffffffffffffffffff
-        self.data = data
-
-    def __eq__(self, other) -> bool:
-        return self.data == other.data
-
-    def molecule(self) -> bytearray:
-        return bytearray(self.data.to_bytes(16, 'little'))
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little')
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> int:
-        return int.from_bytes(data, 'little')
+    def encode(cls, number: int) -> bytearray:
+        assert number >= 0x00
+        assert number <= 0xffffffffffffffffffffffffffffffff
+        return bytearray(number.to_bytes(16, 'little'))
 
     @classmethod
-    def molecule_size(cls) -> int:
+    def size(cls) -> int:
         return 16
+
+
+class I8:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little', signed=True)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        assert number >= -0x80
+        assert number <= +0x7f
+        return bytearray(number.to_bytes(1, 'little', signed=True))
+
+    @classmethod
+    def size(cls) -> int:
+        return 1
+
+
+class I16:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little', signed=True)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        assert number >= -0x8000
+        assert number <= +0x7fff
+        return bytearray(number.to_bytes(2, 'little', signed=True))
+
+    @classmethod
+    def size(cls) -> int:
+        return 2
+
+
+class I32:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little', signed=True)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        assert number >= -0x80000000
+        assert number <= +0x7fffffff
+        return bytearray(number.to_bytes(4, 'little', signed=True))
+
+    @classmethod
+    def size(cls) -> int:
+        return 4
+
+
+class I64:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little', signed=True)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        assert number >= -0x8000000000000000
+        assert number <= +0x7fffffffffffffff
+        return bytearray(number.to_bytes(8, 'little', signed=True))
+
+    @classmethod
+    def size(cls) -> int:
+        return 8
+
+
+class I128:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return int.from_bytes(buffer, 'little', signed=True)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        assert number >= -0x80000000000000000000000000000000
+        assert number <= +0x7fffffffffffffffffffffffffffffff
+        return bytearray(number.to_bytes(16, 'little', signed=True))
+
+    @classmethod
+    def size(cls) -> int:
+        return 16
+
+
+class F32:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> float:
+        return struct.unpack('<f', buffer)[0]
+
+    @classmethod
+    def encode(cls, number: float) -> bytearray:
+        return bytearray(struct.pack('<f', number))
+
+    @classmethod
+    def size(cls) -> int:
+        return 4
+
+
+class F64:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> float:
+        return struct.unpack('<d', buffer)[0]
+
+    @classmethod
+    def encode(cls, number: float) -> bytearray:
+        return bytearray(struct.pack('<d', number))
+
+    @classmethod
+    def size(cls) -> int:
+        return 8
+
+
+class Array:
+    def __init__(self, kype: typing.Any, size: int) -> None:
+        self.kype = kype
+        self.lens = size
+
+    def decode(self, buffer: bytearray) -> typing.List:
+        return [self.kype.decode(e) for e in itertools.batched(buffer, self.kype.size())]
+
+    def encode(self, pylist: typing.List) -> bytearray:
+        assert len(pylist) == self.lens
+        return bytearray(itertools.chain(*[self.kype.encode(e) for e in pylist]))
+
+    def size(self) -> int:
+        return self.kype.size() * self.lens
+
+
+class Struct:
+    def __init__(self, kype: typing.List) -> None:
+        self.kype = kype
+
+    def decode(self, buffer: bytearray) -> typing.List:
+        r = []
+        s = 0
+        for e in self.kype:
+            r.append(e.decode(buffer[s:s+e.size()]))
+            s += e.size()
+        return r
+
+    def encode(self, pylist: typing.List) -> bytearray:
+        r = bytearray()
+        for e in zip(self.kype, pylist):
+            r.extend(e[0].encode(e[1]))
+        return r
+
+
+class Slice:
+    def __init__(self, kype: typing.Any) -> None:
+        assert hasattr(kype, 'size')
+        self.kype = kype
+
+    def decode(self, buffer: bytearray) -> typing.List:
+        return [self.kype.decode(e) for e in itertools.batched(buffer[4:], self.kype.size())]
+
+    def encode(self, pylist: typing.List) -> bytearray:
+        body = bytearray(itertools.chain(*[self.kype.encode(e) for e in pylist]))
+        head = U32.encode(len(pylist))
+        return head + body
+
+
+class Split:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> typing.List[bytearray]:
+        assert len(buffer) >= 4
+        assert len(buffer) == U32.decode(buffer[:4])
+        if len(buffer) == 4:
+            return []
+        nums = U32.decode(buffer[4:8]) // 4 - 1
+        head = []
+        for i in range(nums):
+            head.append(U32.decode(buffer[i * 4 + 4: i * 4 + 8]))
+        head.append(len(buffer))
+        body = []
+        for i in range(nums):
+            body.append(buffer[head[i]:head[i+1]])
+        return body
+
+    @classmethod
+    def encode(cls, pylist: typing.List[bytearray]) -> bytearray:
+        head = bytearray()
+        body = bytearray()
+        head_size = 4 + 4 * len(pylist)
+        body_size = 0
+        for item in pylist:
+            size = head_size + body_size
+            head.extend(U32.encode(size))
+            body.extend(item)
+            body_size += len(item)
+        size = head_size + body_size
+        return U32.encode(size) + head + body
+
+
+class Scale:
+    def __init__(self, kype: typing.Any) -> None:
+        self.kype = kype
+
+    def decode(self, buffer: bytearray) -> typing.List:
+        return [self.kype.decode(e) for e in Split.decode(buffer)]
+
+    def encode(self, pylist: typing.List) -> bytearray:
+        return Split.encode([self.kype.encode(e) for e in pylist])
+
+
+class Table:
+    def __init__(self, kype: typing.List) -> None:
+        self.kype = kype
+
+    def decode(self, buffer: bytearray) -> typing.List:
+        return [e[0].decode(e[1]) for e in zip(self.kype, Split.decode(buffer))]
+
+    def encode(self, pylist: typing.List) -> bytearray:
+        return Split.encode([e[0].encode(e[1]) for e in zip(self.kype, pylist)])
+
+
+class Option:
+    def __init__(self, kype: typing.Any) -> None:
+        self.kype = kype
+
+    def decode(self, buffer: bytearray) -> typing.Optional[typing.Any]:
+        return self.kype.decode(buffer) if len(buffer) > 0x00 else None
+
+    def encode(self, pydata: typing.Optional[typing.Any]) -> bytearray:
+        return self.kype.encode(pydata) if pydata is not None else bytearray()
+
+
+class Enum:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> int:
+        return U32.decode(buffer)
+
+    @classmethod
+    def encode(cls, number: int) -> bytearray:
+        return U32.encode(number)
+
+
+class Sized:
+    def __init__(self, size: int) -> None:
+        self.lens = size
+
+    @classmethod
+    def decode(cls, buffer: bytearray) -> bytearray:
+        return buffer
+
+    @classmethod
+    def encode(cls, buffer: bytearray) -> bytearray:
+        return buffer
+
+    def size(self) -> int:
+        return self.lens
+
+
+class Field:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> bytearray:
+        return buffer
+
+    @classmethod
+    def encode(cls, buffer: bytearray) -> bytearray:
+        return buffer
+
+
+Byte = U8
+Byte10 = Array(U8, 10)
+Byte10.decode = lambda b: bytearray(Array(U8, 10).decode(b))
+Byte32 = Array(U8, 32)
+Byte32.decode = lambda b: bytearray(Array(U8, 32).decode(b))
+Bytes = Slice(U8)
+Bytes.decode = lambda b: bytearray(Slice(U8).decode(b))
