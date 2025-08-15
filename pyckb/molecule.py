@@ -316,30 +316,19 @@ class Enum:
         return U32.encode(number)
 
 
-class Sized:
+class Custom:
     def __init__(self, size: int) -> None:
         self.lens = size
 
-    @classmethod
-    def decode(cls, buffer: bytearray) -> bytearray:
+    def decode(self, buffer: bytearray) -> bytearray:
         return buffer
 
-    @classmethod
-    def encode(cls, buffer: bytearray) -> bytearray:
+    def encode(self, buffer: bytearray) -> bytearray:
         return buffer
 
     def size(self) -> int:
+        assert self.lens != 0
         return self.lens
-
-
-class Field:
-    @classmethod
-    def decode(cls, buffer: bytearray) -> bytearray:
-        return buffer
-
-    @classmethod
-    def encode(cls, buffer: bytearray) -> bytearray:
-        return buffer
 
 
 Byte = U8

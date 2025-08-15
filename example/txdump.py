@@ -32,7 +32,7 @@ for e in [e for e in tx.raw.cell_deps if e.dep_type == 1]:
     origin = pyckb.rpc.get_transaction(f'0x{e.out_point.tx_hash.hex()}')
     origin = pyckb.core.Transaction.rpc_decode(origin['transaction'])
     data = origin.raw.outputs_data[e.out_point.index]
-    outs = pyckb.molecule.Slice(pyckb.molecule.Sized(pyckb.core.OutPoint.molecule_size())).decode(data)
+    outs = pyckb.molecule.Slice(pyckb.molecule.Custom(pyckb.core.OutPoint.molecule_size())).decode(data)
     outs = [pyckb.core.OutPoint.molecule_decode(e) for e in outs]
     deps.extend([pyckb.core.CellDep(e, 0) for e in outs])
 for e in deps:
