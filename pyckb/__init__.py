@@ -4,6 +4,7 @@ from . import core
 from . import denomination
 from . import ecdsa
 from . import molecule
+from . import objectdict
 from . import rate
 from . import rpc
 from . import secp256k1
