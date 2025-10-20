@@ -21,8 +21,7 @@ class Fp:
         return self.__class__(self.x + data.x)
 
     def __eq__(self, data: object) -> bool:
-        if not isinstance(data, Fp):
-            return False
+        assert isinstance(data, Fp)
         assert self.p == data.p
         return self.x == data.x
 
@@ -119,8 +118,7 @@ class Pt:
         return Pt(x3, y3)
 
     def __eq__(self, data: object) -> bool:
-        if not isinstance(data, Pt):
-            return False
+        assert isinstance(data, Pt)
         return all([
             self.x == data.x,
             self.y == data.y,

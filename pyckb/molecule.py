@@ -198,7 +198,8 @@ class Array:
         self.lens = size
 
     def decode(self, buffer: bytearray) -> typing.List:
-        return [self.kype.decode(e) for e in itertools.batched(buffer, self.kype.size())]
+        assert isinstance(buffer, bytearray)
+        return [self.kype.decode(bytearray(e)) for e in itertools.batched(buffer, self.kype.size())]
 
     def encode(self, pylist: typing.List) -> bytearray:
         assert len(pylist) == self.lens
@@ -233,7 +234,8 @@ class Slice:
         self.kype = kype
 
     def decode(self, buffer: bytearray) -> typing.List:
-        return [self.kype.decode(e) for e in itertools.batched(buffer[4:], self.kype.size())]
+        assert isinstance(buffer, bytearray)
+        return [self.kype.decode(bytearray(e)) for e in itertools.batched(buffer[4:], self.kype.size())]
 
     def encode(self, pylist: typing.List) -> bytearray:
         body = bytearray(itertools.chain(*[self.kype.encode(e) for e in pylist]))
@@ -332,9 +334,16 @@ class Custom:
 
 
 Byte = U8
-Byte10 = Array(U8, 10)
-Byte10.decode = lambda b: bytearray(Array(U8, 10).decode(b))
-Byte32 = Array(U8, 32)
-Byte32.decode = lambda b: bytearray(Array(U8, 32).decode(b))
-Bytes = Slice(U8)
-Bytes.decode = lambda b: bytearray(Slice(U8).decode(b))
+Byte10 = Custom(10)
+Byte32 = Custom(32)
+
+
+class Bytes:
+    @classmethod
+    def decode(cls, buffer: bytearray) -> bytearray:
+        assert U32.decode(buffer[:4]) == len(buffer) - 4
+        return buffer[4:]
+
+    @classmethod
+    def encode(cls, buffer: bytearray) -> bytearray:
+        return U32.encode(len(buffer)) + buffer
