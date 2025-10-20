@@ -22,6 +22,7 @@ def sign(prikey: pyckb.secp256k1.Fr, m: pyckb.secp256k1.Fr) -> typing.Tuple[pyck
         if R.x.x >= pyckb.secp256k1.N:
             v |= 2
         return r, s, v
+    raise Exception('unreachable')
 
 
 def verify(pubkey: pyckb.secp256k1.Pt, m: pyckb.secp256k1.Fr, r: pyckb.secp256k1.Fr, s: pyckb.secp256k1.Fr) -> bool:

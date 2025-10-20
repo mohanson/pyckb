@@ -25,7 +25,7 @@ hole = pyckb.core.Script(
 )
 
 with open(args.file, 'rb') as f:
-    data = f.read()
+    data = bytearray(f.read())
     print(f'script.code_hash = {pyckb.core.hash(data).hex()}')
     print(f'script.hash_type = 2(data1)')
     hash = user.script_deploy(hole, data)

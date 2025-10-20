@@ -24,6 +24,7 @@ resp = requests.post('https://faucet-api.nervos.org/claim_events', json={
 assert resp.status_code == 200, resp.text
 id = resp.json()['data']['id']
 
+hash = ''
 for _ in itertools.repeat(0):
     time.sleep(1)
     resp = requests.get(f'https://faucet-api.nervos.org/claim_events')

@@ -31,7 +31,8 @@ class PriKey:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, PriKey)
         return self.n == other.n
 
     def json(self) -> typing.Dict:
@@ -43,7 +44,7 @@ class PriKey:
         return bytearray(self.n.to_bytes(32))
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> PriKey:
         assert len(data) == 32
         return PriKey(int.from_bytes(data))
 
@@ -52,7 +53,7 @@ class PriKey:
         return PubKey(pubkey.x.x, pubkey.y.x)
 
     @classmethod
-    def random(cls) -> typing.Self:
+    def random(cls) -> PriKey:
         return PriKey(max(1, secrets.randbelow(pyckb.secp256k1.N)))
 
     def sign(self, data: bytearray) -> bytearray:
@@ -72,7 +73,8 @@ class PubKey:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, PubKey)
         return all([
             self.x == other.x,
             self.y == other.y,
@@ -88,7 +90,7 @@ class PubKey:
         return pyckb.secp256k1.Pt(pyckb.secp256k1.Fq(self.x), pyckb.secp256k1.Fq(self.y))
 
     @classmethod
-    def pt_decode(cls, data: pyckb.secp256k1.Pt) -> typing.Self:
+    def pt_decode(cls, data: pyckb.secp256k1.Pt) -> PubKey:
         return PubKey(data.x.x, data.y.x)
 
     def sec(self) -> bytearray:
@@ -104,7 +106,7 @@ class PubKey:
         return r
 
     @classmethod
-    def sec_decode(cls, data: bytearray) -> typing.Self:
+    def sec_decode(cls, data: bytearray) -> PubKey:
         p = data[0]
         assert p in [0x02, 0x03, 0x04]
         x = int.from_bytes(data[1:33])
@@ -134,7 +136,8 @@ class Script:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, Script)
         return all([
             self.code_hash == other.code_hash,
             self.hash_type == other.hash_type,
@@ -153,7 +156,7 @@ class Script:
         return pyckb.bech32.encode(pyckb.config.current.hrp, payload)
 
     @classmethod
-    def addr_decode(cls, data: str) -> typing.Self:
+    def addr_decode(cls, data: str) -> Script:
         payload = pyckb.bech32.decode(pyckb.config.current.hrp, data)
         assert payload[0] == 0
         code_hash = payload[1:33]
@@ -179,7 +182,7 @@ class Script:
         ]).encode([self.code_hash, self.hash_type, self.args])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> Script:
         result = pyckb.molecule.Table([
             pyckb.molecule.Byte32,
             pyckb.molecule.Byte,
@@ -200,7 +203,7 @@ class Script:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> Script:
         return Script(
             bytearray.fromhex(data['code_hash'][2:]),
             {
@@ -219,7 +222,8 @@ class OutPoint:
         self.tx_hash = tx_hash
         self.index = index
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, OutPoint)
         return all([
             self.tx_hash == other.tx_hash,
             self.index == other.index,
@@ -244,7 +248,7 @@ class OutPoint:
         ]).encode([self.tx_hash, self.index])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> OutPoint:
         result = pyckb.molecule.Struct([
             pyckb.molecule.Byte32,
             pyckb.molecule.U32,
@@ -262,7 +266,7 @@ class OutPoint:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> OutPoint:
         return OutPoint(
             bytearray.fromhex(data['tx_hash'][2:]),
             int(data['index'], 16),
@@ -274,7 +278,8 @@ class CellInput:
         self.since = since
         self.previous_output = previous_output
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, CellInput)
         return all([
             self.since == other.since,
             self.previous_output == other.previous_output,
@@ -296,7 +301,7 @@ class CellInput:
         ]).encode([self.since, self.previous_output.molecule()])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> CellInput:
         result = pyckb.molecule.Struct([
             pyckb.molecule.U64,
             pyckb.molecule.Custom(OutPoint.molecule_size())
@@ -314,7 +319,7 @@ class CellInput:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> CellInput:
         return CellInput(
             int(data['since'], 16),
             OutPoint.rpc_decode(data['previous_output']),
@@ -327,7 +332,8 @@ class CellOutput:
         self.lock = lock
         self.type = type
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, CellOutput)
         return all([
             self.capacity == other.capacity,
             self.lock == other.lock,
@@ -356,7 +362,7 @@ class CellOutput:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> CellOutput:
         result = pyckb.molecule.Table([
             pyckb.molecule.U64,
             pyckb.molecule.Custom(0),
@@ -376,7 +382,7 @@ class CellOutput:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> CellOutput:
         return CellOutput(
             int(data['capacity'], 16),
             Script.rpc_decode(data['lock']),
@@ -389,7 +395,8 @@ class CellDep:
         self.out_point = out_point
         self.dep_type = dep_type
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, CellDep)
         return all([
             self.out_point == other.out_point,
             self.dep_type == other.dep_type,
@@ -399,7 +406,7 @@ class CellDep:
         return json.dumps(self.json())
 
     @classmethod
-    def conf_decode(cls, data: typing.Dict) -> typing.Self:
+    def conf_decode(cls, data: pyckb.objectdict.ObjectDict) -> CellDep:
         return CellDep(OutPoint(data.out_point.tx_hash, data.out_point.index), data.dep_type)
 
     def json(self) -> typing.Dict:
@@ -415,7 +422,7 @@ class CellDep:
         ]).encode([self.out_point.molecule(), self.dep_type])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> CellDep:
         result = pyckb.molecule.Struct([
             pyckb.molecule.Custom(OutPoint.molecule_size()),
             pyckb.molecule.Byte,
@@ -436,7 +443,7 @@ class CellDep:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> CellDep:
         return CellDep(
             OutPoint.rpc_decode(data['out_point']),
             {'code': 0, 'dep_group': 1}[data['dep_type']],
@@ -460,7 +467,8 @@ class RawTransaction:
         self.outputs = outputs
         self.outputs_data = outputs_data
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, RawTransaction)
         return all([
             self.version == other.version,
             self.cell_deps == other.cell_deps,
@@ -504,7 +512,7 @@ class RawTransaction:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> RawTransaction:
         result = pyckb.molecule.Table([
             pyckb.molecule.U32,
             pyckb.molecule.Slice(pyckb.molecule.Custom(CellDep.molecule_size())),
@@ -533,7 +541,7 @@ class RawTransaction:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> RawTransaction:
         return RawTransaction(
             int(data['version'], 16),
             [CellDep.rpc_decode(e) for e in data['cell_deps']],
@@ -549,7 +557,8 @@ class Transaction:
         self.raw = raw
         self.witnesses = witnesses
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, Transaction)
         return all([
             self.raw == other.raw,
             self.witnesses == other.witnesses,
@@ -559,15 +568,16 @@ class Transaction:
         return json.dumps(self.json())
 
     def hash_sighash_all(self, major: int, other: typing.List[int]) -> bytearray:
-        for e in WitnessArgs.molecule_decode(self.witnesses[major]).lock:
-            assert (e == 0)
+        lock = WitnessArgs.molecule_decode(self.witnesses[major]).lock
+        assert lock is not None
+        assert all([e == 0 for e in lock])
         major_w = self.witnesses[major]
         major_l = len(major_w)
         b = bytearray()
         b.extend(self.raw.hash())
         b.extend(major_l.to_bytes(8, 'little'))
         b.extend(major_w)
-        for e in [e for e in other if e < self.witnesses.len()]:
+        for e in [e for e in other if e < len(self.witnesses)]:
             w = self.witnesses[e]
             l = len(w)
             b.extend(l.to_bytes(8, 'little'))
@@ -590,7 +600,7 @@ class Transaction:
         ]).encode([self.raw.molecule(), self.witnesses])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> Transaction:
         result = pyckb.molecule.Table([
             pyckb.molecule.Custom(0),
             pyckb.molecule.Scale(pyckb.molecule.Bytes),
@@ -606,7 +616,7 @@ class Transaction:
         return r
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> Transaction:
         return Transaction(
             RawTransaction.rpc_decode(data),
             [bytearray.fromhex(e[2:]) for e in data['witnesses']],
@@ -633,7 +643,8 @@ class WitnessArgs:
         self.input_type = input_type
         self.output_type = output_type
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, WitnessArgs)
         return all([
             self.lock == other.lock,
             self.input_type == other.input_type,
@@ -658,7 +669,7 @@ class WitnessArgs:
         ]).encode([self.lock, self.input_type, self.output_type])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> WitnessArgs:
         result = pyckb.molecule.Table([
             pyckb.molecule.Option(pyckb.molecule.Bytes),
             pyckb.molecule.Option(pyckb.molecule.Bytes),
@@ -692,7 +703,8 @@ class RawHeader:
         self.extra_hash = extra_hash
         self.dao = dao
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, RawHeader)
         return all([
             self.version == other.version,
             self.compact_target == other.compact_target,
@@ -749,7 +761,7 @@ class RawHeader:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> RawHeader:
         result = pyckb.molecule.Struct([
             pyckb.molecule.U32,
             pyckb.molecule.U32,
@@ -794,7 +806,7 @@ class RawHeader:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> RawHeader:
         return RawHeader(
             version=int(data['version'], 16),
             compact_target=int(data['compact_target'], 16),
@@ -814,7 +826,8 @@ class Header:
         self.raw = raw
         self.nonce = nonce
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, Header)
         return all([
             self.raw == other.raw,
             self.nonce == other.nonce,
@@ -838,7 +851,7 @@ class Header:
         ]).encode([self.raw.molecule(), self.nonce])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> Header:
         result = pyckb.molecule.Struct([
             pyckb.molecule.Custom(RawHeader.molecule_size()),
             pyckb.molecule.U128,
@@ -855,7 +868,7 @@ class Header:
         return r
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> Header:
         return Header(
             RawHeader.rpc_decode(data),
             int(data['nonce'], 16),
@@ -886,7 +899,8 @@ class UncleBlock:
         self.header = header
         self.proposals = proposals
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, UncleBlock)
         return all([
             self.header == other.header,
             self.proposals == other.proposals,
@@ -911,7 +925,7 @@ class UncleBlock:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> UncleBlock:
         result = pyckb.molecule.Table([
             pyckb.molecule.Custom(0),
             pyckb.molecule.Scale(pyckb.molecule.Bytes),
@@ -928,7 +942,7 @@ class UncleBlock:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> UncleBlock:
         return UncleBlock(
             Header.rpc_decode(data['header']),
             [bytearray.fromhex(e[2:]) for e in data['proposals']]
@@ -948,7 +962,8 @@ class Block:
         self.transactions = transactions
         self.proposals = proposals
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, Block)
         return all([
             self.header == other.header,
             self.uncles == other.uncles,
@@ -981,7 +996,7 @@ class Block:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> Block:
         result = pyckb.molecule.Table([
             pyckb.molecule.Custom(0),
             pyckb.molecule.Scale(pyckb.molecule.Custom(0)),
@@ -1004,7 +1019,7 @@ class Block:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> Block:
         return Block(
             Header.rpc_decode(data['header']),
             [UncleBlock.rpc_decode(e) for e in data['uncles']],
@@ -1028,7 +1043,8 @@ class BlockV1:
         self.proposals = proposals
         self.extension = extension
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, BlockV1)
         return all([
             self.header == other.header,
             self.uncles == other.uncles,
@@ -1065,7 +1081,7 @@ class BlockV1:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> BlockV1:
         result = pyckb.molecule.Table([
             pyckb.molecule.Custom(0),
             pyckb.molecule.Scale(pyckb.molecule.Custom(0)),
@@ -1091,7 +1107,7 @@ class BlockV1:
         }
 
     @classmethod
-    def rpc_decode(cls, data: typing.Dict) -> typing.Self:
+    def rpc_decode(cls, data: typing.Dict) -> BlockV1:
         return BlockV1(
             Header.rpc_decode(data['header']),
             [UncleBlock.rpc_decode(e) for e in data['uncles']],
@@ -1106,7 +1122,8 @@ class CellbaseWitness:
         self.lock = lock
         self.message = message
 
-    def __eq__(self, other: typing.Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, CellbaseWitness)
         return all([
             self.lock == other.lock,
             self.message == other.message,
@@ -1131,7 +1148,7 @@ class CellbaseWitness:
         ])
 
     @classmethod
-    def molecule_decode(cls, data: bytearray) -> typing.Self:
+    def molecule_decode(cls, data: bytearray) -> CellbaseWitness:
         result = pyckb.molecule.Table([
             pyckb.molecule.Custom(0),
             pyckb.molecule.Bytes,
@@ -1148,7 +1165,7 @@ class CellbaseWitness:
         }
 
     @classmethod
-    def rpc_deocde(cls, data: typing.Dict) -> typing.Self:
+    def rpc_deocde(cls, data: typing.Dict) -> CellbaseWitness:
         return CellbaseWitness(
             Script.rpc_decode(data['lock']),
             bytearray.fromhex(data['message'][2:]),

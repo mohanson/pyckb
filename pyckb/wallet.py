@@ -228,6 +228,7 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#type-id
+        assert tx.raw.outputs[0].type is not None
         tx.raw.outputs[0].type.args = pyckb.core.hash(tx.raw.inputs[0].molecule() + bytearray(8))
         tx.raw.outputs[1].capacity = change_capacity
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
@@ -244,6 +245,7 @@ class Wallet:
     ) -> bytearray:
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
+        assert origin.type is not None
         assert origin.type.code_hash == pyckb.core.type_id_code_hash
         assert origin.type.hash_type == pyckb.core.type_id_hash_type
         sender_capacity = origin.capacity
@@ -321,6 +323,7 @@ class Wallet:
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         number = int(pyckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
+        assert origin.type is not None
         assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
@@ -337,7 +340,7 @@ class Wallet:
         tx.raw.inputs.append(pyckb.core.CellInput(0, out_point))
         tx.raw.outputs.append(pyckb.core.CellOutput(accept_capacity, accept_script, accept_typeid))
         tx.raw.outputs.append(pyckb.core.CellOutput(change_capacity, change_script, None))
-        tx.raw.outputs_data.append(number.to_bytes(8, 'little'))
+        tx.raw.outputs_data.append(bytearray(number.to_bytes(8, 'little')))
         tx.raw.outputs_data.append(bytearray())
         tx.witnesses.append(pyckb.core.WitnessArgs(bytearray(65), None, None).molecule())
         for cell in itertools.islice(self.livecell(), 255):
@@ -361,6 +364,7 @@ class Wallet:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
+        assert origin.type is not None
         assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
         assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
         assert origin.type.args == bytearray()
