@@ -9,8 +9,9 @@ import typing
 
 
 def call(method: str, params: typing.List) -> typing.Any:
-    call.rate = getattr(call, 'rate', pyckb.rate.Limits(pyckb.config.current.rpc.qps, 1))
-    call.rate.wait(1)
+    if not hasattr(call, 'rate'):
+        setattr(call, 'rate', pyckb.rate.Limits(pyckb.config.current.rpc.qps, 1))
+    getattr(call, 'rate').wait(1)
     r = requests.post(pyckb.config.current.rpc.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
