@@ -20,6 +20,7 @@ if args.net == 'mainnet':
 if args.net == 'testnet':
     pyckb.config.current = pyckb.config.testnet
 
+tx_json = {}
 if args.file:
     tx_json = json.load(open(args.file))
 if args.hash:
