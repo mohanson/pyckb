@@ -101,7 +101,7 @@ def get_blockchain_info():
     pass
 
 
-def get_cells(search_key: typing.Dict, order: str, limit: str, after: str) -> typing.Dict:
+def get_cells(search_key: typing.Dict, order: str, limit: str, after: typing.Optional[str]) -> typing.Dict:
     return call('get_cells', [search_key, order, limit, after])
 
 

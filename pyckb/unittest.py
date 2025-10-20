@@ -9,7 +9,7 @@ class Cell:
 
     def __init__(self, out_point: pyckb.core.OutPoint, cell_output: pyckb.core.CellOutput, data: bytearray) -> None:
         self.out_point = out_point
-        self.cell_ouput = cell_output
+        self.cell_output = cell_output
         self.data = data
 
 
@@ -59,7 +59,8 @@ class Resource:
 
     def create_script_by_type(self, cell: Cell, args: bytearray) -> pyckb.core.Script:
         # Create a script using the hash of a cell's type script as the code hash.
-        return pyckb.core.Script(cell.cell_ouput.type.hash(), pyckb.core.script_hash_type_type, args)
+        assert cell.cell_output.type is not None
+        return pyckb.core.Script(cell.cell_output.type.hash(), pyckb.core.script_hash_type_type, args)
 
     def create_script_in_vain(self) -> pyckb.core.Script:
         # Create a dummy script with zeroed-out code hash and no arguments.
@@ -87,14 +88,15 @@ class Verifier:
         deps = self.tx.raw.cell_deps.copy()
         for e in [e for e in self.tx.raw.cell_deps if e.dep_type == 1]:
             cell = self.resource.cell[e.out_point]
-            cout = [pyckb.core.OutPoint.molecule_decode(e) for e in pyckb.molecule.decode_fixvec(cell.data)]
+            cout = pyckb.molecule.Slice(pyckb.molecule.Custom).decode(cell.data)
+            cout = [pyckb.core.OutPoint.molecule_decode(e) for e in cout]
             cdep = [pyckb.core.CellDep(e, 0) for e in cout]
             deps.extend(cdep)
         for e in deps:
             cell = self.resource.cell[e.out_point]
             mock['cell_deps'].append({
                 'cell_dep': e.rpc(),
-                'output': cell.cell_ouput.rpc(),
+                'output': cell.cell_output.rpc(),
                 'data': f'0x{cell.data.hex()}',
             })
         # Add inputs to the mock info.
@@ -102,7 +104,7 @@ class Verifier:
             cell = self.resource.cell[e.previous_output]
             mock['inputs'].append({
                 'input': e.rpc(),
-                'output': cell.cell_ouput.rpc(),
+                'output': cell.cell_output.rpc(),
                 'data': f'0x{cell.data.hex()}',
             })
         return {'mock_info': mock, 'tx': self.tx.rpc()}
@@ -124,7 +126,7 @@ class Verifier:
             cmds = f'{self.debugger} --tx-file - --script input.{i}.lock'
             rets = subprocess.run(cmds, capture_output=True, input=txfile, shell=True)
             result.append(rets)
-            if not cell.cell_ouput.type:
+            if not cell.cell_output.type:
                 continue
             cmds = f'{self.debugger} --tx-file - --script input.{i}.type'
             rets = subprocess.run(cmds, capture_output=True, input=txfile, shell=True)
