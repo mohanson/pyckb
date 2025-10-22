@@ -4,6 +4,7 @@ import pyckb.bech32
 import pyckb.config
 import pyckb.ecdsa
 import pyckb.molecule
+import pyckb.objectdict
 import pyckb.secp256k1
 import secrets
 import typing
@@ -638,7 +639,12 @@ def epoch_decode(v: int) -> typing.Tuple[int, int, int]:
 
 
 class WitnessArgs:
-    def __init__(self, lock: bytearray | None, input_type: bytearray | None, output_type: bytearray | None) -> None:
+    def __init__(
+        self,
+        lock: typing.Optional[bytearray],
+        input_type: typing.Optional[bytearray],
+        output_type: typing.Optional[bytearray],
+    ) -> None:
         self.lock = lock
         self.input_type = input_type
         self.output_type = output_type
