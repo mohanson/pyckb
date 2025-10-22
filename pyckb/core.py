@@ -793,11 +793,11 @@ class RawHeader:
 
     def rpc(self) -> typing.Dict:
         return {
-            'version': f'0x{hex(self.version)}',
-            'compact_target': f'0x{hex(self.compact_target)}',
-            'timestamp': f'0x{hex(self.timestamp)}',
-            'number': f'0x{hex(self.number)}',
-            'epoch': f'0x{hex(self.epoch)}',
+            'version': hex(self.version),
+            'compact_target': hex(self.compact_target),
+            'timestamp': hex(self.timestamp),
+            'number': hex(self.number),
+            'epoch': hex(self.epoch),
             'parent_hash': f'0x{self.parent_hash.hex()}',
             'transactions_root': f'0x{self.transactions_root.hex()}',
             'proposals_hash': f'0x{self.proposals_hash.hex()}',
