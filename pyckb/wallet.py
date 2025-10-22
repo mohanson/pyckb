@@ -83,7 +83,8 @@ class Wallet:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, Wallet)
         return all([
             self.prikey == other.prikey,
             self.pubkey == other.pubkey,
