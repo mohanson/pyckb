@@ -1165,7 +1165,7 @@ class CellbaseWitness:
         }
 
     @classmethod
-    def rpc_deocde(cls, data: typing.Dict) -> CellbaseWitness:
+    def rpc_decode(cls, data: typing.Dict) -> CellbaseWitness:
         return CellbaseWitness(
             Script.rpc_decode(data['lock']),
             bytearray.fromhex(data['message'][2:]),
