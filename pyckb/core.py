@@ -864,7 +864,7 @@ class Header:
 
     def rpc(self) -> typing.Dict:
         r = self.raw.rpc()
-        r['nonce'] = f'0x{hex(self.nonce)}'
+        r['nonce'] = hex(self.nonce)
         return r
 
     @classmethod
