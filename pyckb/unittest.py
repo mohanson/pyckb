@@ -59,8 +59,8 @@ class Resource:
 
     def create_script_by_type(self, cell: Cell, args: bytearray) -> pyckb.core.Script:
         # Create a script using the hash of a cell's type script as the code hash.
-        assert cell.cell_output.type is not None
-        return pyckb.core.Script(cell.cell_output.type.hash(), pyckb.core.script_hash_type_type, args)
+        assert cell.cell_output.kype is not None
+        return pyckb.core.Script(cell.cell_output.kype.hash(), pyckb.core.script_hash_type_type, args)
 
     def create_script_in_vain(self) -> pyckb.core.Script:
         # Create a dummy script with zeroed-out code hash and no arguments.
@@ -126,13 +126,13 @@ class Verifier:
             cmds = f'{self.debugger} --tx-file - --script input.{i}.lock'
             rets = subprocess.run(cmds, capture_output=True, input=txfile, shell=True)
             result.append(rets)
-            if not cell.cell_output.type:
+            if not cell.cell_output.kype:
                 continue
             cmds = f'{self.debugger} --tx-file - --script input.{i}.type'
             rets = subprocess.run(cmds, capture_output=True, input=txfile, shell=True)
             result.append(rets)
         for i, e in enumerate(self.tx.raw.outputs):
-            if not e.type:
+            if not e.kype:
                 continue
             cmds = f'{self.debugger} --tx-file - --script output.{i}.type'
             rets = subprocess.run(cmds, capture_output=True, input=txfile, shell=True)

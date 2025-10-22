@@ -48,7 +48,7 @@ class PriKey:
         assert len(data) == 32
         return PriKey(int.from_bytes(data))
 
-    def pubkey(self):
+    def pubkey(self) -> PubKey:
         pubkey = pyckb.secp256k1.G * pyckb.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
 
@@ -327,17 +327,17 @@ class CellInput:
 
 
 class CellOutput:
-    def __init__(self, capacity: int, lock: Script, type: Script | None) -> None:
+    def __init__(self, capacity: int, lock: Script, kype: typing.Optional[Script]) -> None:
         self.capacity = capacity
         self.lock = lock
-        self.type = type
+        self.kype = kype
 
     def __eq__(self, other: object) -> bool:
         assert isinstance(other, CellOutput)
         return all([
             self.capacity == other.capacity,
             self.lock == other.lock,
-            self.type == other.type,
+            self.kype == other.kype,
         ])
 
     def __repr__(self) -> str:
@@ -347,7 +347,7 @@ class CellOutput:
         return {
             'capacity': self.capacity,
             'lock': self.lock.json(),
-            'type': self.type.json() if self.type else None
+            'type': self.kype.json() if self.kype else None
         }
 
     def molecule(self) -> bytearray:
@@ -358,7 +358,7 @@ class CellOutput:
         ]).encode([
             self.capacity,
             self.lock.molecule(),
-            self.type.molecule() if self.type else bytearray(),
+            self.kype.molecule() if self.kype else bytearray(),
         ])
 
     @classmethod
@@ -378,7 +378,7 @@ class CellOutput:
         return {
             'capacity': hex(self.capacity),
             'lock': self.lock.rpc(),
-            'type': self.type.rpc() if self.type else None
+            'type': self.kype.rpc() if self.kype else None
         }
 
     @classmethod

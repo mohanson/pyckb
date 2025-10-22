@@ -228,8 +228,8 @@ class Wallet:
                 break
         assert change_capacity >= 61 * pyckb.denomination.ckbytes
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#type-id
-        assert tx.raw.outputs[0].type is not None
-        tx.raw.outputs[0].type.args = pyckb.core.hash(tx.raw.inputs[0].molecule() + bytearray(8))
+        assert tx.raw.outputs[0].kype is not None
+        tx.raw.outputs[0].kype.args = pyckb.core.hash(tx.raw.inputs[0].molecule() + bytearray(8))
         tx.raw.outputs[1].capacity = change_capacity
         sg = self.prikey.sign(tx.hash_sighash_all(0, []))
         tx.witnesses[0] = pyckb.core.WitnessArgs(sg, None, None).molecule()
@@ -245,13 +245,13 @@ class Wallet:
     ) -> bytearray:
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
-        assert origin.type is not None
-        assert origin.type.code_hash == pyckb.core.type_id_code_hash
-        assert origin.type.hash_type == pyckb.core.type_id_hash_type
+        assert origin.kype is not None
+        assert origin.kype.code_hash == pyckb.core.type_id_code_hash
+        assert origin.kype.hash_type == pyckb.core.type_id_hash_type
         sender_capacity = origin.capacity
         accept_capacity = (126 + len(data)) * pyckb.denomination.ckbytes
         accept_script = script
-        accept_typeid = origin.type
+        accept_typeid = origin.kype
         change_capacity = 0
         change_script = self.script
         tx = pyckb.core.Transaction(pyckb.core.RawTransaction(0, [], [], [], [], []), [])
@@ -323,14 +323,14 @@ class Wallet:
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         number = int(pyckb.rpc.get_header(result['tx_status']['block_hash'])['number'], 16)
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
-        assert origin.type is not None
-        assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
-        assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
-        assert origin.type.args == bytearray()
+        assert origin.kype is not None
+        assert origin.kype.code_hash == pyckb.config.current.script.dao.code_hash
+        assert origin.kype.hash_type == pyckb.config.current.script.dao.hash_type
+        assert origin.kype.args == bytearray()
         sender_capacity = origin.capacity
         accept_capacity = origin.capacity
         accept_script = origin.lock
-        accept_typeid = origin.type
+        accept_typeid = origin.kype
         change_capacity = 0
         change_script = self.script
         tx = pyckb.core.Transaction(pyckb.core.RawTransaction(0, [], [], [], [], []), [])
@@ -364,10 +364,10 @@ class Wallet:
         # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
         result = pyckb.rpc.get_transaction('0x' + out_point.tx_hash.hex())
         origin = pyckb.core.CellOutput.rpc_decode(result['transaction']['outputs'][out_point.index])
-        assert origin.type is not None
-        assert origin.type.code_hash == pyckb.config.current.script.dao.code_hash
-        assert origin.type.hash_type == pyckb.config.current.script.dao.hash_type
-        assert origin.type.args == bytearray()
+        assert origin.kype is not None
+        assert origin.kype.code_hash == pyckb.config.current.script.dao.code_hash
+        assert origin.kype.hash_type == pyckb.config.current.script.dao.hash_type
+        assert origin.kype.args == bytearray()
         deposit_block_number_byte = bytearray.fromhex(result['transaction']['outputs_data'][out_point.index][2:])
         deposit_block_number = int.from_bytes(deposit_block_number_byte, 'little')
         deposit_block_header = pyckb.core.Header.rpc_decode(pyckb.rpc.get_header_by_number(hex(deposit_block_number)))
