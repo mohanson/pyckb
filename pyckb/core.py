@@ -51,7 +51,7 @@ class PriKey:
 
     def pubkey(self) -> PubKey:
         pubkey = pyckb.secp256k1.G * pyckb.secp256k1.Fr(self.n)
-        return PubKey(pubkey.x.x, pubkey.y.x)
+        return PubKey(pubkey.x.n, pubkey.y.n)
 
     @classmethod
     def random(cls) -> PriKey:
@@ -61,7 +61,7 @@ class PriKey:
         assert len(data) == 32
         m = pyckb.secp256k1.Fr(int.from_bytes(data))
         r, s, v = pyckb.ecdsa.sign(pyckb.secp256k1.Fr(self.n), m)
-        return bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32)) + bytearray([v])
+        return bytearray(r.n.to_bytes(32)) + bytearray(s.n.to_bytes(32)) + bytearray([v])
 
 
 class PubKey:
@@ -92,7 +92,7 @@ class PubKey:
 
     @classmethod
     def pt_decode(cls, data: pyckb.secp256k1.Pt) -> PubKey:
-        return PubKey(data.x.x, data.y.x)
+        return PubKey(data.x.n, data.y.n)
 
     def sec(self) -> bytearray:
         # The Standards of Efficient Cryptography (SEC) encoding is used to serialize ECDSA public keys. Public keys in
@@ -114,7 +114,7 @@ class PubKey:
         if p == 0x04:
             y = int.from_bytes(data[33:65])
         else:
-            y_x_y = x * x * x + pyckb.secp256k1.A.x * x + pyckb.secp256k1.B.x
+            y_x_y = x * x * x + pyckb.secp256k1.A.n * x + pyckb.secp256k1.B.n
             y = pow(y_x_y, (pyckb.secp256k1.P + 1) // 4, pyckb.secp256k1.P)
             if y & 1 != p - 2:
                 y = -y % pyckb.secp256k1.P

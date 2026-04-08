@@ -13,43 +13,43 @@ class Fp:
 
     p = 0
 
-    def __init__(self, x: int) -> None:
-        self.x = x % self.p
+    def __init__(self, n: int) -> None:
+        self.n = n % self.p
 
     def __add__(self, data: typing.Self) -> typing.Self:
         assert self.p == data.p
-        return self.__class__(self.x + data.x)
+        return self.__class__(self.n + data.n)
 
     def __eq__(self, data: object) -> bool:
         assert isinstance(data, Fp)
         assert self.p == data.p
-        return self.x == data.x
+        return self.n == data.n
 
     def __mul__(self, data: typing.Self) -> typing.Self:
         assert self.p == data.p
-        return self.__class__(self.x * data.x)
+        return self.__class__(self.n * data.n)
 
     def __neg__(self) -> typing.Self:
-        return self.__class__(self.p - self.x)
+        return self.__class__(self.p - self.n)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
     def __sub__(self, data: typing.Self) -> typing.Self:
         assert self.p == data.p
-        return self.__class__(self.x - data.x)
+        return self.__class__(self.n - data.n)
 
     def __truediv__(self, data: typing.Self) -> typing.Self:
         return self * data ** -1
 
     def __pos__(self) -> typing.Self:
-        return self.__class__(self.x)
+        return self.__class__(self.n)
 
     def __pow__(self, data: int) -> typing.Self:
-        return self.__class__(pow(self.x, data, self.p))
+        return self.__class__(pow(self.n, data, self.p))
 
     def json(self) -> str:
-        return f'{self.x:064x}'
+        return f'{self.n:064x}'
 
     @classmethod
     def nil(cls) -> typing.Self:
@@ -106,15 +106,15 @@ class Pt:
         if x2 == Fq(0) and y2 == Fq(0):
             return self
         if x1 == x2 and y1 == +y2:
-            sk = (x1 * x1 + x1 * x1 + x1 * x1 + A) / (y1 + y1)
-            x3 = sk * sk - x1 - x2
-            y3 = sk * (x1 - x3) - y1
+            sl = (x1 * x1 * Fq(3) + A) / (y1 + y1)
+            x3 = sl * sl - x1 - x2
+            y3 = sl * (x1 - x3) - y1
             return Pt(x3, y3)
         if x1 == x2 and y1 == -y2:
             return I
-        sk = (y2 - y1) / (x2 - x1)
-        x3 = sk * sk - x1 - x2
-        y3 = sk * (x1 - x3) - y1
+        sl = (y2 - y1) / (x2 - x1)
+        x3 = sl * sl - x1 - x2
+        y3 = sl * (x1 - x3) - y1
         return Pt(x3, y3)
 
     def __eq__(self, data: object) -> bool:
@@ -127,7 +127,7 @@ class Pt:
     def __mul__(self, k: Fr) -> Pt:
         # Point multiplication: Double-and-add
         # https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
-        n = k.x
+        n = k.n
         result = I
         addend = self
         while n:
@@ -153,7 +153,7 @@ class Pt:
     def __pos__(self) -> Pt:
         return Pt(self.x, +self.y)
 
-    def json(self) -> typing.Dict[str, str]:
+    def json(self) -> dict[str, str]:
         return {
             'x': self.x.json(),
             'y': self.y.json(),
@@ -178,7 +178,6 @@ if __name__ == '__main__':
     assert p + q == G * Fr(66)
     assert p + p == G * Fr(84)
     assert p - q == G * Fr(18)
-    assert r == -p
     assert p + r == I
     assert p + I == p
     assert p * Fr(42) == G * Fr(1764)
