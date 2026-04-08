@@ -8,7 +8,7 @@ import typing
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 
 
-def call(method: str, params: typing.List) -> typing.Any:
+def call(method: str, params: list) -> typing.Any:
     if not hasattr(call, 'rate'):
         setattr(call, 'rate', pyckb.rate.Limits(pyckb.config.current.rpc.qps, 1))
     getattr(call, 'rate').wait(1)
@@ -70,11 +70,11 @@ def get_banned_addresses():
     pass
 
 
-def get_block(block_hash: str) -> typing.Dict:
+def get_block(block_hash: str) -> dict:
     return call('get_block', [block_hash])
 
 
-def get_block_by_number(block_number: str) -> typing.Dict:
+def get_block_by_number(block_number: str) -> dict:
     return call('get_block_by_number', [block_number])
 
 
@@ -102,15 +102,15 @@ def get_blockchain_info():
     pass
 
 
-def get_cells(search_key: typing.Dict, order: str, limit: str, after: typing.Optional[str]) -> typing.Dict:
+def get_cells(search_key: dict, order: str, limit: str, after: str | None) -> dict:
     return call('get_cells', [search_key, order, limit, after])
 
 
-def get_cells_capacity(search_key: typing.Dict) -> typing.Dict:
+def get_cells_capacity(search_key: dict) -> dict:
     return call('get_cells_capacity', [search_key])
 
 
-def get_cells_iter(search_key: typing.Dict) -> typing.Generator:
+def get_cells_iter(search_key: dict) -> typing.Generator:
     cursor = None
     limits = 256
     for _ in itertools.repeat(0):
@@ -126,7 +126,7 @@ def get_consensus():
     pass
 
 
-def get_current_epoch() -> typing.Dict[str, typing.Any]:
+def get_current_epoch() -> dict:
     return call('get_current_epoch', [])
 
 
@@ -146,15 +146,15 @@ def get_fork_block():
     pass
 
 
-def get_header(block_hash: str) -> typing.Dict:
+def get_header(block_hash: str) -> dict:
     return call('get_header', [block_hash])
 
 
-def get_header_by_number(block_number: str) -> typing.Dict:
+def get_header_by_number(block_number: str) -> dict:
     return call('get_header_by_number', [block_number])
 
 
-def get_indexer_tip() -> typing.Dict:
+def get_indexer_tip() -> dict:
     return call('get_indexer_tip', [])
 
 
@@ -178,11 +178,11 @@ def get_tip_block_number() -> str:
     return call('get_tip_block_number', [])
 
 
-def get_tip_header() -> typing.Dict:
+def get_tip_header() -> dict:
     return call('get_tip_header', [])
 
 
-def get_transaction(tx_hash: str) -> typing.Dict:
+def get_transaction(tx_hash: str) -> dict:
     return call('get_transaction', [tx_hash])
 
 
@@ -230,7 +230,7 @@ def send_alert():
     pass
 
 
-def send_transaction(transaction: typing.Dict) -> str:
+def send_transaction(transaction: dict) -> str:
     return call('send_transaction', [transaction, 'passthrough'])
 
 

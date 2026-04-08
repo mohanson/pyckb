@@ -1,7 +1,6 @@
 import json
 import pyckb.core
 import subprocess
-import typing
 
 
 class Cell:
@@ -17,7 +16,7 @@ class Resource:
     # Define a class to manage resources, primarily cells.
 
     def __init__(self) -> None:
-        self.cell: typing.Dict[pyckb.core.OutPoint, Cell] = {}
+        self.cell: dict[pyckb.core.OutPoint, Cell] = {}
         self.cell_outpoint_hash = bytearray(32)
         self.cell_outpoint_incr = 0
 
@@ -81,7 +80,7 @@ class Verifier:
         self.resource = resource
         self.tx = tx
 
-    def rpc(self) -> typing.Dict:
+    def rpc(self) -> dict:
         # Generate a json representation of the transaction with mock data for debugging.
         mock = {'cell_deps': [], 'header_deps': [], 'inputs': []}
         # Add cell dependencies to the mock info.
@@ -117,7 +116,7 @@ class Verifier:
         # Verify that the transaction fails (at least one script returns 0xfe).
         assert len([e for e in self.verify() if e.returncode == 0xfe]) != 0
 
-    def verify(self) -> typing.List[subprocess.CompletedProcess[bytes]]:
+    def verify(self) -> list[subprocess.CompletedProcess[bytes]]:
         # Run the ckb-debugger on each script in the transaction and collect results.
         txfile = json.dumps(self.rpc()).encode()
         result = []

@@ -197,11 +197,11 @@ class Array:
         self.kype = kype
         self.lens = size
 
-    def decode(self, buffer: bytearray) -> typing.List:
+    def decode(self, buffer: bytearray) -> list:
         assert isinstance(buffer, bytearray)
         return [self.kype.decode(bytearray(e)) for e in itertools.batched(buffer, self.kype.size())]
 
-    def encode(self, pylist: typing.List) -> bytearray:
+    def encode(self, pylist: list) -> bytearray:
         assert len(pylist) == self.lens
         return bytearray(itertools.chain(*[self.kype.encode(e) for e in pylist]))
 
@@ -210,10 +210,10 @@ class Array:
 
 
 class Struct:
-    def __init__(self, kype: typing.List) -> None:
+    def __init__(self, kype: list) -> None:
         self.kype = kype
 
-    def decode(self, buffer: bytearray) -> typing.List:
+    def decode(self, buffer: bytearray) -> list:
         r = []
         s = 0
         for e in self.kype:
@@ -221,7 +221,7 @@ class Struct:
             s += e.size()
         return r
 
-    def encode(self, pylist: typing.List) -> bytearray:
+    def encode(self, pylist: list) -> bytearray:
         r = bytearray()
         for e in zip(self.kype, pylist):
             r.extend(e[0].encode(e[1]))
@@ -233,11 +233,11 @@ class Slice:
         assert hasattr(kype, 'size')
         self.kype = kype
 
-    def decode(self, buffer: bytearray) -> typing.List:
+    def decode(self, buffer: bytearray) -> list:
         assert isinstance(buffer, bytearray)
         return [self.kype.decode(bytearray(e)) for e in itertools.batched(buffer[4:], self.kype.size())]
 
-    def encode(self, pylist: typing.List) -> bytearray:
+    def encode(self, pylist: list) -> bytearray:
         body = bytearray(itertools.chain(*[self.kype.encode(e) for e in pylist]))
         head = U32.encode(len(pylist))
         return head + body
@@ -245,7 +245,7 @@ class Slice:
 
 class Split:
     @classmethod
-    def decode(cls, buffer: bytearray) -> typing.List[bytearray]:
+    def decode(cls, buffer: bytearray) -> list[bytearray]:
         assert len(buffer) >= 4
         assert len(buffer) == U32.decode(buffer[:4])
         if len(buffer) == 4:
@@ -261,7 +261,7 @@ class Split:
         return body
 
     @classmethod
-    def encode(cls, pylist: typing.List[bytearray]) -> bytearray:
+    def encode(cls, pylist: list[bytearray]) -> bytearray:
         head = bytearray()
         body = bytearray()
         head_size = 4 + 4 * len(pylist)
@@ -279,21 +279,21 @@ class Scale:
     def __init__(self, kype: typing.Any) -> None:
         self.kype = kype
 
-    def decode(self, buffer: bytearray) -> typing.List:
+    def decode(self, buffer: bytearray) -> list:
         return [self.kype.decode(e) for e in Split.decode(buffer)]
 
-    def encode(self, pylist: typing.List) -> bytearray:
+    def encode(self, pylist: list) -> bytearray:
         return Split.encode([self.kype.encode(e) for e in pylist])
 
 
 class Table:
-    def __init__(self, kype: typing.List) -> None:
+    def __init__(self, kype: list) -> None:
         self.kype = kype
 
-    def decode(self, buffer: bytearray) -> typing.List:
+    def decode(self, buffer: bytearray) -> list:
         return [e[0].decode(e[1]) for e in zip(self.kype, Split.decode(buffer))]
 
-    def encode(self, pylist: typing.List) -> bytearray:
+    def encode(self, pylist: list) -> bytearray:
         return Split.encode([e[0].encode(e[1]) for e in zip(self.kype, pylist)])
 
 
@@ -301,10 +301,10 @@ class Option:
     def __init__(self, kype: typing.Any) -> None:
         self.kype = kype
 
-    def decode(self, buffer: bytearray) -> typing.Optional[typing.Any]:
+    def decode(self, buffer: bytearray) -> typing.Any | None:
         return self.kype.decode(buffer) if len(buffer) > 0x00 else None
 
-    def encode(self, pydata: typing.Optional[typing.Any]) -> bytearray:
+    def encode(self, pydata: typing.Any | None) -> bytearray:
         return self.kype.encode(pydata) if pydata is not None else bytearray()
 
 

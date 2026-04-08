@@ -92,7 +92,7 @@ class Wallet:
             self.addr == other.addr,
         ])
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
