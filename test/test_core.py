@@ -19,6 +19,17 @@ def test_addr():
     assert script.hash().hex() == '0b1bae4beaf456349c63c3ce67491fc75a1276d7f9eedd7ea84d6a77f9f3f5f7'
     assert pyckb.core.Script.molecule_decode(script.molecule()) == script
 
+    pyckb.config.current = pyckb.config.mainnet
+    addrv0 = 'ckb1qyqt8xaupvm8837nv3gtc9x0ekkj64vud3jqfwyw5v'
+    addrv1 = 'ckb1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqdnnw7qkdnnclfkg59uzn8umtfd2kwxceqxwquc4'
+    a = pyckb.core.Script.addr_decode_v0(addrv0)
+    b = pyckb.core.Script.addr_decode_v1(addrv1)
+    c = pyckb.core.Script.addr_decode(addrv0)
+    d = pyckb.core.Script.addr_decode(addrv1)
+    assert a == b
+    assert b == c
+    assert c == d
+
 
 def test_block():
     pyckb.config.current = pyckb.config.mainnet

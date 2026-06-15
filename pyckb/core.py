@@ -156,13 +156,41 @@ class Script:
         return pyckb.bech32.encode_addr(pyckb.config.current.hrp, payload)
 
     @classmethod
-    def addr_decode(cls, data: str) -> Script:
+    def addr_decode_v0(cls, data: str) -> Script:
+        # Short version for locks with popular code_hash, deprecated.
+        # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
+        payload = pyckb.bech32.re_arrange_8(pyckb.bech32.decode(pyckb.config.current.hrp, 0, data))
+        assert payload[0] == 0x01
+        match payload[1]:
+            case 0x00:
+                code_hash = pyckb.config.current.script.secp256k1_blake160.code_hash
+                hash_type = pyckb.config.current.script.secp256k1_blake160.hash_type
+                args = payload[2:22]
+                return Script(code_hash, hash_type, args)
+            case 0x01:
+                code_hash = pyckb.config.current.script.secp256k1_multisig.code_hash
+                hash_type = pyckb.config.current.script.secp256k1_multisig.hash_type
+                args = payload[2:22]
+                return Script(code_hash, hash_type, args)
+            case _:
+                assert False
+
+    @classmethod
+    def addr_decode_v1(cls, data: str) -> Script:
+        # Full version identifies the hash_type.
+        # See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md
         payload = pyckb.bech32.decode_addr(pyckb.config.current.hrp, data)
         assert payload[0] == 0
         code_hash = payload[1:33]
         hash_type = payload[33]
         args = payload[34:]
         return Script(code_hash, hash_type, args)
+
+    @classmethod
+    def addr_decode(cls, data: str) -> Script:
+        if len(data) == 46:
+            return cls.addr_decode_v0(data)
+        return cls.addr_decode_v1(data)
 
     def hash(self) -> bytearray:
         return hash(self.molecule())

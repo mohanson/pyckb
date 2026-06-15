@@ -33,6 +33,17 @@ develop = pyckb.objectdict.ObjectDict({
                 'dep_type': 1,
             }
         },
+        'secp256k1_multisig': {
+            'code_hash': bytearray.fromhex('5c5069eb0857efc65e1bca0c07df34c31663b3622fd3876c876320fc9634e2a8'),
+            'hash_type': 1,
+            'cell_dep': {
+                'out_point': {
+                    'tx_hash': bytearray.fromhex('0000000000000000000000000000000000000000000000000000000000000000'),
+                    'index': 1,
+                },
+                'dep_type': 1,
+            }
+        },
     }
 })
 
@@ -62,6 +73,17 @@ mainnet = pyckb.objectdict.ObjectDict({
                 'out_point': {
                     'tx_hash': bytearray.fromhex('71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c'),
                     'index': 0,
+                },
+                'dep_type': 1,
+            }
+        },
+        'secp256k1_multisig': {
+            'code_hash': bytearray.fromhex('5c5069eb0857efc65e1bca0c07df34c31663b3622fd3876c876320fc9634e2a8'),
+            'hash_type': 1,
+            'cell_dep': {
+                'out_point': {
+                    'tx_hash': bytearray.fromhex('71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c'),
+                    'index': 1,
                 },
                 'dep_type': 1,
             }
@@ -99,6 +121,17 @@ testnet = pyckb.objectdict.ObjectDict({
                 'dep_type': 1,
             }
         },
+        'secp256k1_multisig': {
+            'code_hash': bytearray.fromhex('5c5069eb0857efc65e1bca0c07df34c31663b3622fd3876c876320fc9634e2a8'),
+            'hash_type': 1,
+            'cell_dep': {
+                'out_point': {
+                    'tx_hash': bytearray.fromhex('f8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37'),
+                    'index': 1,
+                },
+                'dep_type': 1,
+            }
+        },
     }
 })
 
@@ -114,6 +147,7 @@ def upgrade(url: str):
     develop.rpc.url = url
     develop.script.dao.cell_dep.out_point.tx_hash = bytearray.fromhex(t[0]['hash'][2:])
     develop.script.secp256k1_blake160.cell_dep.out_point.tx_hash = bytearray.fromhex(t[1]['hash'][2:])
+    develop.script.secp256k1_multisig.cell_dep.out_point.tx_hash = bytearray.fromhex(t[1]['hash'][2:])
 
 
 current = develop
