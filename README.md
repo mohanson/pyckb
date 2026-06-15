@@ -100,9 +100,9 @@ $ python example/unittest.py
 ## Test
 
 ```sh
-$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.205.0/ckb_v0.205.0_x86_64-unknown-linux-gnu.tar.gz
-$ tar -xvf ckb_v0.205.0_x86_64-unknown-linux-gnu.tar.gz
-$ cd ckb_v0.205.0_x86_64-unknown-linux-gnu/
+$ wget https://github.com/nervosnetwork/ckb/releases/download/v0.207.0/ckb_v0.207.0_x86_64-unknown-linux-gnu.tar.gz
+$ tar -xvf ckb_v0.207.0_x86_64-unknown-linux-gnu.tar.gz
+$ cd ckb_v0.207.0_x86_64-unknown-linux-gnu/
 
 $ ckb init --chain dev --ba-arg 0x75178f34549c5fe9cd1a0c57aebd01e7ddf9249e
 $ ckb run --indexer
