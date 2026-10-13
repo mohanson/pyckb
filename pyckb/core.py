@@ -35,6 +35,15 @@ class PriKey:
         assert isinstance(other, PriKey)
         return self.n == other.n
 
+    def hex(self) -> str:
+        # Convert the private key to hex representation.
+        return self.n.to_bytes(32).hex()
+
+    @classmethod
+    def hex_decode(cls, data: str) -> PriKey:
+        # Convert the hex representation to private key.
+        return PriKey(int.from_bytes(bytearray.fromhex(data)))
+
     def json(self) -> dict:
         return {
             'n': f'{self.n:064x}',

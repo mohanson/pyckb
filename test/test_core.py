@@ -54,6 +54,12 @@ def test_epoch():
     assert pyckb.core.epoch_encode(147, 312, 873) == 0x3690138000093
 
 
+def test_prikey():
+    prikey = pyckb.core.PriKey(1)
+    assert prikey.hex() == '0000000000000000000000000000000000000000000000000000000000000001'
+    assert pyckb.core.PriKey.hex_decode(prikey.hex()) == prikey
+
+
 def test_pubkey():
     # Double checked by https://pyckb.tools/generator
     prikey = pyckb.core.PriKey(1)
