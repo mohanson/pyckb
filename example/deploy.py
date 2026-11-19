@@ -1,4 +1,5 @@
 import argparse
+
 import pyckb
 
 # Deploy a script to the chain.

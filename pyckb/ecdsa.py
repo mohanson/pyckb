@@ -1,5 +1,6 @@
-import pyckb.secp256k1
 import secrets
+
+import pyckb.secp256k1
 
 
 def sign(prikey: pyckb.secp256k1.Fr, m: pyckb.secp256k1.Fr) -> tuple[pyckb.secp256k1.Fr, pyckb.secp256k1.Fr, int]:

@@ -1,11 +1,12 @@
 import itertools
 import json
 import math
-import pyckb.config
-import pyckb.denomination
-import pyckb.core
-import pyckb.rpc
 import typing
+
+import pyckb.config
+import pyckb.core
+import pyckb.denomination
+import pyckb.rpc
 
 
 class WalletTransactionAnalyzer:

@@ -1,5 +1,6 @@
-import pyckb
 import random
+
+import pyckb
 
 
 def test_addr():

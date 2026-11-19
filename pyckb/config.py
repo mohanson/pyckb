@@ -1,7 +1,8 @@
-import pyckb.objectdict
 import random
+
 import requests
 
+import pyckb.objectdict
 
 develop = pyckb.objectdict.ObjectDict({
     'hrp': 'ckt',

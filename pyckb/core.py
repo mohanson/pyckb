@@ -1,12 +1,13 @@
 import hashlib
 import json
+import secrets
+
 import pyckb.bech32
 import pyckb.config
 import pyckb.ecdsa
 import pyckb.molecule
 import pyckb.objectdict
 import pyckb.secp256k1
-import secrets
 
 # https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md
 # The Type ID code cell uses a special type script hash, which is just the ascii codes in hex of the text TYPE_ID.

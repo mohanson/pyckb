@@ -1,5 +1,6 @@
-import pyckb
 import secrets
+
+import pyckb
 
 
 def test_sign():

@@ -1,9 +1,11 @@
 import argparse
-import pyckb
 import itertools
-import requests
 import secrets
 import time
+
+import requests
+
+import pyckb
 
 # This script generates a random address to request ckb from the faucet, and transfers the obtained ckb to the
 # specified user, breaking through the single address limit of the faucet.

@@ -1,4 +1,5 @@
 import argparse
+
 import pyckb
 
 # Transfer ckb to another account. If value is 0, then all assets will be transferred.

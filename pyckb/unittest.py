@@ -1,6 +1,7 @@
 import json
-import pyckb.core
 import subprocess
+
+import pyckb.core
 
 
 class Cell:

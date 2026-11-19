@@ -1,9 +1,11 @@
 import itertools
+import random
+import typing
+
+import requests
+
 import pyckb.config
 import pyckb.rate
-import random
-import requests
-import typing
 
 # Doc: https://github.com/nervosnetwork/ckb/tree/develop/rpc
 

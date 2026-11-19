@@ -1,4 +1,5 @@
 import argparse
+
 import pyckb
 
 # Calculate address from private key in secp256k1 lock.

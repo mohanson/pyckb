@@ -1,4 +1,5 @@
 import argparse
+
 import pyckb
 
 # Get the capacity by an address.
